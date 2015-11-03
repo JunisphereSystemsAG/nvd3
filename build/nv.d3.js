@@ -2480,10 +2480,11 @@ nv.models.bullet = function() {
         ;
 
     function sortLabels(labels, values){
+        var lz = labels.slice();
         labels.sort(function(a, b){
-            var iA = labels.indexOf(a);
-            var iB = labels.indexOf(b);
-            return values[iA] < values[iB];
+            var iA = lz.indexOf(a);
+            var iB = lz.indexOf(b);
+            return d3.descending(values[iA], values[iB]);
         });
     };
 
@@ -2495,9 +2496,9 @@ nv.models.bullet = function() {
             container = d3.select(this);
             nv.utils.initSVG(container);
 
-            var rangez = ranges.call(this, d, i).slice().sort(d3.descending),
-                markerz = markers.call(this, d, i).slice().sort(d3.descending),
-                measurez = measures.call(this, d, i).slice().sort(d3.descending),
+            var rangez = ranges.call(this, d, i).slice(),
+                markerz = markers.call(this, d, i).slice(),
+                measurez = measures.call(this, d, i).slice(),
                 rangeLabelz = rangeLabels.call(this, d, i).slice(),
                 markerLabelz = markerLabels.call(this, d, i).slice(),
                 measureLabelz = measureLabels.call(this, d, i).slice();
@@ -2506,6 +2507,11 @@ nv.models.bullet = function() {
             sortLabels(rangeLabelz, rangez);
             sortLabels(markerLabelz, markerz);
             sortLabels(measureLabelz, measurez);
+
+            // sort values descending
+            rangez.sort(d3.descending);
+            markerz.sort(d3.descending);
+            measurez.sort(d3.descending);
 
             // Setup Scales
             // Compute the new x-scale.
