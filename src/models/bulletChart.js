@@ -65,9 +65,11 @@ nv.models.bulletChart = function() {
 
             wrap.attr('transform', 'translate(' + margin.left + ',' + margin.top + ')');
 
+            var xDomain = bullet.xDomain() || [0, Math.max(rangez[0], markerz[0], measurez[0])]
+
             // Compute the new x-scale.
             var x1 = d3.scale.linear()
-                .domain([0, Math.max(rangez[0], markerz[0], measurez[0])])  // TODO: need to allow forceX and forceY, and xDomain, yDomain
+                .domain(xDomain)  // TODO: need to allow forceX and forceY, and xDomain, yDomain
                 .range(reverse ? [availableWidth, 0] : [0, availableWidth]);
 
             // Retrieve the old x-scale, if this is an update.
@@ -79,7 +81,7 @@ nv.models.bulletChart = function() {
             this.__chart__ = x1;
 
             var w0 = function(d) { return Math.abs(x0(d) - x0(0)) }, // TODO: could optimize by precalculating x0(0) and x1(0)
-                w1 = function(d) { return Math.abs(x1(d) - x1(0)) };
+                w1 = function(d) { return Math.abs(x1(d) - x1(xDomain[0])) };
 
             var title = gEnter.select('.nv-titles').append('g')
                 .attr('text-anchor', 'end')

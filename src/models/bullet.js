@@ -20,6 +20,7 @@ nv.models.bullet = function() {
         , markerLabels = function(d) { return d.markerLabels ? d.markerLabels : []  }
         , measureLabels = function(d) { return d.measureLabels ? d.measureLabels : []  }
         , forceX = [0] // List of numbers to Force into the X scale (ie. 0, or a max / min, etc.)
+        , xDomain
         , width = 380
         , height = 30
         , container = null
@@ -45,8 +46,11 @@ nv.models.bullet = function() {
 
             // Setup Scales
             // Compute the new x-scale.
+
+            var xd = xDomain || d3.extent(d3.merge([forceX, rangez]));
+
             var x1 = d3.scale.linear()
-                .domain( d3.extent(d3.merge([forceX, rangez])) )
+                .domain(xd)
                 .range(reverse ? [availableWidth, 0] : [0, availableWidth]);
 
             // Retrieve the old x-scale, if this is an update.
@@ -74,10 +78,10 @@ nv.models.bullet = function() {
 
             wrap.attr('transform', 'translate(' + margin.left + ',' + margin.top + ')');
 
-            var w0 = function(d) { return Math.abs(x0(d) - x0(0)) }, // TODO: could optimize by precalculating x0(0) and x1(0)
-                w1 = function(d) { return Math.abs(x1(d) - x1(0)) };
-            var xp0 = function(d) { return d < 0 ? x0(d) : x0(0) },
-                xp1 = function(d) { return d < 0 ? x1(d) : x1(0) };
+            var w0 = function(d) { return Math.abs(x0(d) - x0(xd[0])) }, // TODO: could optimize by precalculating x0(0) and x1(0)
+                w1 = function(d) { return Math.abs(x1(d) - x1(xd[0])) };
+            var xp0 = function(d) { return d < xDomain[0] ? x0(d) : x0(xd[0]) },
+                xp1 = function(d) { return d < xDomain[0] ? x1(d) : x1(xd[0]) };
 
             g.select('rect.nv-rangeMax')
                 .attr('height', availableHeight)
@@ -208,6 +212,7 @@ nv.models.bullet = function() {
         markers:     {get: function(){return markers;}, set: function(_){markers=_;}}, // markers (previous, goal)
         measures: {get: function(){return measures;}, set: function(_){measures=_;}}, // measures (actual, forecast)
         forceX:      {get: function(){return forceX;}, set: function(_){forceX=_;}},
+        xDomain: {get: function(){return xDomain;}, set: function(_){xDomain=_;}},
         width:    {get: function(){return width;}, set: function(_){width=_;}},
         height:    {get: function(){return height;}, set: function(_){height=_;}},
         tickFormat:    {get: function(){return tickFormat;}, set: function(_){tickFormat=_;}},
