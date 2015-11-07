@@ -80,8 +80,8 @@ nv.models.bullet = function() {
 
             var w0 = function(d) { return Math.abs(x0(d) - x0(xd[0])) }, // TODO: could optimize by precalculating x0(0) and x1(0)
                 w1 = function(d) { return Math.abs(x1(d) - x1(xd[0])) };
-            var xp0 = function(d) { return d < xDomain[0] ? x0(d) : x0(xd[0]) },
-                xp1 = function(d) { return d < xDomain[0] ? x1(d) : x1(xd[0]) };
+            var xp0 = function(d) { return d < xd[0] ? x0(d) : x0(xd[0]) },
+                xp1 = function(d) { return d < xd[0] ? x1(d) : x1(xd[0]) };
 
             g.select('rect.nv-rangeMax')
                 .attr('height', availableHeight)
