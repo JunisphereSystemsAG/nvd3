@@ -119,9 +119,9 @@ nv.models.bullet = function() {
                 .attr('height', availableHeight / 3)
                 .attr('y', availableHeight / 3)
                 .attr('width', measurez < 0 ?
-                    x1(xDomain[0]) - x1(measurez[0])
-                    : x1(measurez[0]) - x1(xDomain[0]))
-                .attr('x', xp1(xDomain[0]))
+                    x1(xd[0]) - x1(measurez[0])
+                    : x1(measurez[0]) - x1(xd[0]))
+                .attr('x', xp1(xd[0]))
                 .on('mouseover', function() {
                     dispatch.elementMouseover({
                         value: measurez[0],
