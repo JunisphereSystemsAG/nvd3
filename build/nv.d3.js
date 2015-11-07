@@ -1,4 +1,4 @@
-/* nvd3 version 1.8.1-dev (https://github.com/novus/nvd3) 2015-11-04 */
+/* nvd3 version 1.8.1-dev (https://github.com/novus/nvd3) 2015-11-07 */
 (function(){
 
 // set up main nv object
@@ -2470,6 +2470,7 @@ nv.models.bullet = function() {
         , markerLabels = function(d) { return d.markerLabels ? d.markerLabels : []  }
         , measureLabels = function(d) { return d.measureLabels ? d.measureLabels : []  }
         , forceX = [0] // List of numbers to Force into the X scale (ie. 0, or a max / min, etc.)
+        , xDomain
         , width = 380
         , height = 30
         , container = null
@@ -2516,8 +2517,11 @@ nv.models.bullet = function() {
 
             // Setup Scales
             // Compute the new x-scale.
+
+            var xd = xDomain || d3.extent(d3.merge([forceX, rangez]));
+
             var x1 = d3.scale.linear()
-                .domain( d3.extent(d3.merge([forceX, rangez])) )
+                .domain(xd)
                 .range(reverse ? [availableWidth, 0] : [0, availableWidth]);
 
             // Retrieve the old x-scale, if this is an update.
@@ -2546,10 +2550,10 @@ nv.models.bullet = function() {
 
             wrap.attr('transform', 'translate(' + margin.left + ',' + margin.top + ')');
 
-            var w0 = function(d) { return Math.abs(x0(d) - x0(0)) }, // TODO: could optimize by precalculating x0(0) and x1(0)
-                w1 = function(d) { return Math.abs(x1(d) - x1(0)) };
-            var xp0 = function(d) { return d < 0 ? x0(d) : x0(0) },
-                xp1 = function(d) { return d < 0 ? x1(d) : x1(0) };
+            var w0 = function(d) { return Math.abs(x0(d) - x0(xd[0])) }, // TODO: could optimize by precalculating x0(0) and x1(0)
+                w1 = function(d) { return Math.abs(x1(d) - x1(xd[0])) };
+            var xp0 = function(d) { return d < xd[0] ? x0(d) : x0(xd[0]) },
+                xp1 = function(d) { return d < xd[0] ? x1(d) : x1(xd[0]) };
 
             for(var i=0,il=rangez.length; i<il; i++){
                 var range = rangez[i];
@@ -2565,9 +2569,9 @@ nv.models.bullet = function() {
                 .attr('height', availableHeight / 3)
                 .attr('y', availableHeight / 3)
                 .attr('width', measurez < 0 ?
-                    x1(0) - x1(measurez[0])
-                    : x1(measurez[0]) - x1(0))
-                .attr('x', xp1(measurez))
+                    x1(xd[0]) - x1(measurez[0])
+                    : x1(measurez[0]) - x1(xd[0]))
+                .attr('x', xp1(xd[0]))
                 .on('mouseover', function() {
                     dispatch.elementMouseover({
                         value: measurez[0],
@@ -2672,6 +2676,7 @@ nv.models.bullet = function() {
         markers:     {get: function(){return markers;}, set: function(_){markers=_;}}, // markers (previous, goal)
         measures: {get: function(){return measures;}, set: function(_){measures=_;}}, // measures (actual, forecast)
         forceX:      {get: function(){return forceX;}, set: function(_){forceX=_;}},
+        xDomain: {get: function(){return xDomain;}, set: function(_){xDomain=_;}},
         width:    {get: function(){return width;}, set: function(_){width=_;}},
         height:    {get: function(){return height;}, set: function(_){height=_;}},
         tickFormat:    {get: function(){return tickFormat;}, set: function(_){tickFormat=_;}},
@@ -2764,9 +2769,11 @@ nv.models.bulletChart = function() {
 
             wrap.attr('transform', 'translate(' + margin.left + ',' + margin.top + ')');
 
+            var xDomain = bullet.xDomain() || [0, Math.max(rangez[0], (markerz[0] || 0), measurez[0])]
+
             // Compute the new x-scale.
             var x1 = d3.scale.linear()
-                .domain([0, Math.max(rangez[0], (markerz[0] || 0), measurez[0])])  // TODO: need to allow forceX and forceY, and xDomain, yDomain
+                .domain(xDomain)  // TODO: need to allow forceX and forceY, and xDomain, yDomain
                 .range(reverse ? [availableWidth, 0] : [0, availableWidth]);
 
             // Retrieve the old x-scale, if this is an update.
@@ -2778,7 +2785,7 @@ nv.models.bulletChart = function() {
             this.__chart__ = x1;
 
             var w0 = function(d) { return Math.abs(x0(d) - x0(0)) }, // TODO: could optimize by precalculating x0(0) and x1(0)
-                w1 = function(d) { return Math.abs(x1(d) - x1(0)) };
+                w1 = function(d) { return Math.abs(x1(d) - x1(xDomain[0])) };
 
             var title = gEnter.select('.nv-titles').append('g')
                 .attr('text-anchor', 'end')
