@@ -1,4 +1,4 @@
-/* nvd3 version 1.8.1-dev (https://github.com/novus/nvd3) 2015-11-07 */
+/* nvd3 version 1.8.1-dev (https://github.com/novus/nvd3) 2015-11-08 */
 (function(){
 
 // set up main nv object
@@ -2543,7 +2543,11 @@ nv.models.bullet = function() {
             var g = wrap.select('g');
 
             for(var i=0,il=rangez.length; i<il; i++){
-                gEnter.append('rect').attr('class', 'nv-range nv-range'+i+' nv-range'+legacyRangeClassNames[i]);
+                var rangeClassNames = 'nv-range nv-range'+i;
+                if(i <= 2){
+                    rangeClassNames = rangeClassNames + ' nv-range'+legacyRangeClassNames[i];
+                }
+                gEnter.append('rect').attr('class', rangeClassNames);
             }
 
             gEnter.append('rect').attr('class', 'nv-measure');
