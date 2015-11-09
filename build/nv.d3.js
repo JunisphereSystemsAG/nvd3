@@ -1,4 +1,4 @@
-/* nvd3 version 1.8.1-dev (https://github.com/novus/nvd3) 2015-11-08 */
+/* nvd3 version 1.8.1-dev (https://github.com/novus/nvd3) 2015-11-09 */
 (function(){
 
 // set up main nv object
@@ -2815,7 +2815,7 @@ nv.models.bulletChart = function() {
 
             // Update the tick groups.
             var tick = g.selectAll('g.nv-tick')
-                .data(x1.ticks( ticks ? ticks : (availableWidth / 50) ), function(d) {
+                .data(x1.ticks( ticks ? ticks : (availableWidth / 100) ), function(d) {
                     return this.textContent || format(d);
                 });
 
