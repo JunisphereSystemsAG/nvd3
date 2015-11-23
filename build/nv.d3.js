@@ -1,4 +1,4 @@
-/* nvd3 version 1.8.1-dev (https://github.com/novus/nvd3) 2015-11-09 */
+/* nvd3 version 1.8.1-dev (https://github.com/novus/nvd3) 2015-11-23 */
 (function(){
 
 // set up main nv object
@@ -9298,7 +9298,58 @@ nv.models.multiChart = function() {
               }
             }
 
-            if(!useInteractiveGuideline){
+            if(useInteractiveGuideline){
+                interactiveLayer.dispatch.on('elementMousemove', function(e) {
+                    clearHighlights();
+                    var singlePoint, pointIndex, pointXLocation, allData = [];
+                    data
+                    .filter(function(series, i) {
+                        series.seriesIndex = i;
+                        return !series.disabled;
+                    })
+                    .forEach(function(series,i) {
+                        var extent = x.domain();
+                        var currentValues = series.values.filter(function(d,i) {
+                            return chart.x()(d,i) >= extent[0] && chart.x()(d,i) <= extent[1];
+                        });
+
+                        pointIndex = nv.interactiveBisect(currentValues, e.pointXValue, chart.x());
+                        var point = currentValues[pointIndex];
+                        var pointYValue = chart.y()(point, pointIndex);
+                        if (pointYValue !== null) {
+                            highlightPoint(i, pointIndex, true);
+                        }
+                        if (point === undefined) return;
+                        if (singlePoint === undefined) singlePoint = point;
+                        if (pointXLocation === undefined) pointXLocation = x(chart.x()(point,pointIndex));
+                        allData.push({
+                            key: series.key,
+                            value: pointYValue,
+                            color: color(series,series.seriesIndex),
+                            data: point,
+                            yAxis: series.yAxis == 2 ? yAxis2 : yAxis1
+                        });
+                    });
+
+                    interactiveLayer.tooltip
+                    .chartContainer(chart.container.parentNode)
+                    .valueFormatter(function(d,i) {
+                        var yAxis = allData[i].yAxis;
+                        return d === null ? "N/A" : yAxis.tickFormat()(d);
+                    })
+                    .data({
+                        value: chart.x()( singlePoint,pointIndex ),
+                        index: pointIndex,
+                        series: allData
+                    })();
+
+                    interactiveLayer.renderGuideLine(pointXLocation);
+                });
+
+                interactiveLayer.dispatch.on("elementMouseout",function(e) {
+                    clearHighlights();
+                });
+            } else {
                 lines1.dispatch.on('elementMouseover.tooltip', mouseover_line);
                 lines2.dispatch.on('elementMouseover.tooltip', mouseover_line);
                 lines1.dispatch.on('elementMouseout.tooltip', function(evt) {
@@ -9342,58 +9393,6 @@ nv.models.multiChart = function() {
                     tooltip();
                 });
             }
-
-            interactiveLayer.dispatch.on('elementMousemove', function(e) {
-                clearHighlights();
-                var singlePoint, pointIndex, pointXLocation, allData = [];
-                data
-                .filter(function(series, i) {
-                    series.seriesIndex = i;
-                    return !series.disabled;
-                })
-                .forEach(function(series,i) {
-                    var extent = x.domain();
-                    var currentValues = series.values.filter(function(d,i) {
-                        return chart.x()(d,i) >= extent[0] && chart.x()(d,i) <= extent[1];
-                    });
-
-                    pointIndex = nv.interactiveBisect(currentValues, e.pointXValue, chart.x());
-                    var point = currentValues[pointIndex];
-                    var pointYValue = chart.y()(point, pointIndex);
-                    if (pointYValue !== null) {
-                        highlightPoint(i, pointIndex, true);
-                    }
-                    if (point === undefined) return;
-                    if (singlePoint === undefined) singlePoint = point;
-                    if (pointXLocation === undefined) pointXLocation = x(chart.x()(point,pointIndex));
-                    allData.push({
-                        key: series.key,
-                        value: pointYValue,
-                        color: color(series,series.seriesIndex),
-                        data: point,
-                        yAxis: series.yAxis == 2 ? yAxis2 : yAxis1
-                    });
-                });
-
-                interactiveLayer.tooltip
-                .chartContainer(chart.container.parentNode)
-                .valueFormatter(function(d,i) {
-                    var yAxis = allData[i].yAxis;
-                    return d === null ? "N/A" : yAxis.tickFormat()(d);
-                })
-                .data({
-                    value: chart.x()( singlePoint,pointIndex ),
-                    index: pointIndex,
-                    series: allData
-                })();
-
-                interactiveLayer.renderGuideLine(pointXLocation);
-            });
-
-            interactiveLayer.dispatch.on("elementMouseout",function(e) {
-                clearHighlights();
-            });
-
         });
 
         return chart;
