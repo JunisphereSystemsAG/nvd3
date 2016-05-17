@@ -48,7 +48,7 @@ nv.models.multiChart = function() {
 
         legend = nv.models.legend().height(30),
         tooltip = nv.models.tooltip(),
-        dispatch = d3.dispatch();
+        dispatch = d3.dispatch("stateChange");
 
     var charts = [lines1, lines2, scatters1, scatters2, bars1, bars2, stack1, stack2];
 
@@ -273,6 +273,7 @@ nv.models.multiChart = function() {
 
             legend.dispatch.on('stateChange', function(newState) {
                 chart.update();
+                dispatch.stateChange(newState);
             });
 
             if(useInteractiveGuideline){
