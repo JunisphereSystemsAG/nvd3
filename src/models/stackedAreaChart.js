@@ -170,7 +170,7 @@ nv.models.stackedAreaChart = function() {
                 legend.width(legendWidth);
                 g.select('.nv-legendWrap').datum(data).call(legend);
 
-                if ( margin.top != legend.height()) {
+                if (legend.height() > margin.top) {
                     margin.top = legend.height();
                     availableHeight = nv.utils.availableHeight(height, container, margin) - (focusEnable ? focus.height() : 0);
                 }
@@ -223,7 +223,7 @@ nv.models.stackedAreaChart = function() {
                     .datum(controlsData)
                     .call(controls);
 
-                if ( margin.top != Math.max(controls.height(), legend.height()) ) {
+                if (Math.max(controls.height(), legend.height()) > margin.top) {
                     margin.top = Math.max(controls.height(), legend.height());
                     availableHeight = nv.utils.availableHeight(height, container, margin);
                 }
@@ -471,7 +471,6 @@ nv.models.stackedAreaChart = function() {
                 }
 
                 interactiveLayer.tooltip
-                    .chartContainer(that.parentNode)
                     .valueFormatter(valueFormatter)
                     .data(
                     {
@@ -651,6 +650,6 @@ nv.models.stackedAreaChart = function() {
 
 nv.models.stackedAreaWithFocusChart = function() {
   return nv.models.stackedAreaChart()
-    .margin({ bottom: 30 }) 
+    .margin({ bottom: 30 })
     .focusEnable( true );
 };
