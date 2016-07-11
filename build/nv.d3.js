@@ -1,4 +1,4 @@
-/* nvd3 version 1.8.4-dev (https://github.com/novus/nvd3) 2016-07-07 */
+/* nvd3 version 1.8.4-dev (https://github.com/novus/nvd3) 2016-07-11 */
 (function(){
 
 // set up main nv object
@@ -6121,7 +6121,7 @@ nv.models.legend = function() {
             var g = wrap.select('g');
 
             if (rightAlign)
-                wrap.attr('transform', 'translate(' - margin.right + ',' + margin.top + ')');
+                wrap.attr('transform', 'translate(' + -margin.right + ',' + margin.top + ')');
             else
                 wrap.attr('transform', 'translate(' + margin.left + ',' + margin.top + ')');
 
