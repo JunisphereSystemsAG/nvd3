@@ -293,6 +293,7 @@ nv.models.multiBar = function() {
                         return (y0(stacked && !data[j].nonStackable ? d.y0 : 0) || 0) - height / 2.0 + 3
                     })
                     .attr("stroke", "none")
+                    .attr("fill","black")
                 ;
 
                 texts
