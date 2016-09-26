@@ -289,6 +289,14 @@ nv.models.multiBar = function() {
                     .attr('text-anchor', 'middle')
                     .attr("stroke", "none")
                     .attr("fill","black")
+                    .attr('x', function(d,i,j) {
+                        var width = x.rangeBand() / (stacked && !data[j].nonStackable ? 1 : data.length );
+                        return (stacked && !data[j].nonStackable ? 0 : (j * x.rangeBand() / data.length )) + width / 2.0;
+                    })
+                    .attr('y', function(d,i,j) {
+                        return 0;
+                    })
+                    .attr('transform', function(d,i) { return 'translate(' + x(getX(d,i)) + ',0)'; })
                 ;
 
                 texts
@@ -296,7 +304,7 @@ nv.models.multiBar = function() {
                         var y = getY(d,i);
                         return y != 0 ? y : "";
                     })
-                    .watchTransition(renderWatch, 'multibar: bars')
+                    .watchTransition(renderWatch, 'multibar: bars texts')
                     .attr('x', function(d,i,j) {
                         var width = x.rangeBand() / (stacked && !data[j].nonStackable ? 1 : data.length );
                         return (stacked && !data[j].nonStackable ? 0 : (j * x.rangeBand() / data.length )) + width / 2.0;
