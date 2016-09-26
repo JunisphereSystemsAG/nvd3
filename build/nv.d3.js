@@ -8248,18 +8248,13 @@ nv.models.multiBar = function() {
 
 
             if (showValues) {
-                var texts = groups.selectAll("text").data(function(d) { return (hideable && !data.length) ? hideable.values : d.values });;
+                var texts = groups.selectAll("text")
+                    .data(function(d) { return (hideable && !data.length) ? hideable.values : d.values });;
+
+                texts.exit().remove();
 
                 texts.enter().append('text')
                     .attr('text-anchor', 'middle')
-                    .attr('x', function(d,i,j) {
-                        var width = x.rangeBand() / (stacked && !data[j].nonStackable ? 1 : data.length );
-                        return (stacked && !data[j].nonStackable ? 0 : (j * x.rangeBand() / data.length )) + width / 2.0;
-                    })
-                    .attr('y', function(d,i,j) {
-                        var height = Math.max(Math.abs(y(d.y+d.y0) - y(d.y0)), 0);
-                        return (y0(stacked && !data[j].nonStackable ? d.y0 : 0) || 0) - height / 2.0 + 3
-                    })
                     .attr("stroke", "none")
                     .attr("fill","black")
                 ;
@@ -8269,9 +8264,16 @@ nv.models.multiBar = function() {
                         var y = getY(d,i);
                         return y != 0 ? y : "";
                     })
-                    .watchTransition(renderWatch, 'multibar: bars text')
+                    .watchTransition(renderWatch, 'multibar: bars')
+                    .attr('x', function(d,i,j) {
+                        var width = x.rangeBand() / (stacked && !data[j].nonStackable ? 1 : data.length );
+                        return (stacked && !data[j].nonStackable ? 0 : (j * x.rangeBand() / data.length )) + width / 2.0;
+                    })
+                    .attr('y', function(d,i,j) {
+                        var height = Math.max(Math.abs(y(d.y+d.y0) - y(d.y0)), 0);
+                        return y(d.y0) - (height / 2.0) + 4;
+                    })
                     .attr('transform', function(d,i) { return 'translate(' + x(getX(d,i)) + ',0)'; })
-
                 ;
             } else {
                 groups.selectAll('text').remove();
@@ -8290,6 +8292,7 @@ nv.models.multiBar = function() {
                     .delay(function(d,i) {
                         return i * duration / data[0].values.length;
                     });
+
             if (stacked){
                 barSelection
                     .attr('y', function(d,i,j) {
