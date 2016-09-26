@@ -7996,6 +7996,7 @@ nv.models.multiBar = function() {
         , yDomain
         , xRange
         , yRange
+        , showValues = false
         , groupSpacing = 0.1
         , fillOpacity = 0.75
         , dispatch = d3.dispatch('chartClick', 'elementClick', 'elementDblClick', 'elementMouseover', 'elementMouseout', 'elementMousemove', 'renderEnd')
@@ -8245,6 +8246,37 @@ nv.models.multiBar = function() {
                 .attr('class', function(d,i) { return getY(d,i) < 0 ? 'nv-bar negative' : 'nv-bar positive'})
                 .attr('transform', function(d,i) { return 'translate(' + x(getX(d,i)) + ',0)'; })
 
+
+            if (showValues) {
+                var texts = groups.selectAll("text").data(function(d) { return (hideable && !data.length) ? hideable.values : d.values });;
+
+                texts.enter().append('text')
+                    .attr('text-anchor', 'middle')
+                    .attr('x', function(d,i,j) {
+                        var width = x.rangeBand() / (stacked && !data[j].nonStackable ? 1 : data.length );
+                        return (stacked && !data[j].nonStackable ? 0 : (j * x.rangeBand() / data.length )) + width / 2.0;
+                    })
+                    .attr('y', function(d,i,j) {
+                        var height = Math.max(Math.abs(y(d.y+d.y0) - y(d.y0)), 0);
+                        return (y0(stacked && !data[j].nonStackable ? d.y0 : 0) || 0) - height / 2.0 + 3
+                    })
+                    .attr("stroke", "none")
+                ;
+
+                texts
+                    .text(function(d,i) {
+                        var y = getY(d,i);
+                        return y != 0 ? y : "";
+                    })
+                    .watchTransition(renderWatch, 'multibar: bars text')
+                    .attr('transform', function(d,i) { return 'translate(' + x(getX(d,i)) + ',0)'; })
+
+                ;
+            } else {
+                groups.selectAll('text').remove();
+            }
+
+
             if (barColor) {
                 if (!disabled) disabled = data.map(function() { return true });
                 bars
@@ -8372,6 +8404,7 @@ nv.models.multiBar = function() {
         hideable:    {get: function(){return hideable;}, set: function(_){hideable=_;}},
         groupSpacing:{get: function(){return groupSpacing;}, set: function(_){groupSpacing=_;}},
         fillOpacity: {get: function(){return fillOpacity;}, set: function(_){fillOpacity=_;}},
+        showValues: {get: function(){return showValues;}, set: function(_){showValues=_;}},
 
         // options that require extra logic in the setter
         margin: {get: function(){return margin;}, set: function(_){
