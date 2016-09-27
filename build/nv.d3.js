@@ -2659,19 +2659,13 @@ nv.models.bullet = function() {
                     .transition()
                     .duration(duration)
                     .attr('width', w1(range))
-                    .attr('x', xp1(range))
+                    .attr('x', xp1(xd[0]))
             }
 
             g.select('rect.nv-measure')
                 .style('fill', color)
                 .attr('height', availableHeight / 3)
                 .attr('y', availableHeight / 3)
-
-                .attr('width', measurez < 0 ?
-                    x1(xd[0]) - x1(measurez[0])
-                    : x1(measurez[0]) - x1(xd[0]))
-                .attr('x', xp1(xd[0]))
-
                 .on('mouseover', function() {
                     dispatch.elementMouseover({
                         value: measurez[0],
@@ -2695,10 +2689,8 @@ nv.models.bullet = function() {
                 })
                 .transition()
                 .duration(duration)
-                .attr('width', measurez < 0 ?
-                    x1(0) - x1(measurez[0])
-                    : x1(measurez[0]) - x1(0))
-                .attr('x', xp1(measurez));
+                .attr('width', w1(measurez[0]))
+                .attr('x', x1(xd[0]));
 
             var h3 =  availableHeight / 6;
 
