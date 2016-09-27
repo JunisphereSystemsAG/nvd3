@@ -1,4 +1,4 @@
-/* nvd3 version 1.8.4-dev (https://github.com/novus/nvd3) 2016-09-26 */
+/* nvd3 version 1.8.4-dev (https://github.com/novus/nvd3) 2016-09-27 */
 (function(){
 
 // set up main nv object
@@ -8169,6 +8169,9 @@ nv.models.multiBar = function() {
                 })
                 .attr('height', 0)
                 .remove();
+
+            groups.exit().selectAll('text').remove();
+
             if (exitTransition.delay)
                 exitTransition.delay(function(d,i) {
                     var delay = i * (duration / (last_datalength + 1)) - i;
