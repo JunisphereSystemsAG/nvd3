@@ -1,4 +1,4 @@
-/* nvd3 version 1.8.4-dev (https://github.com/novus/nvd3) 2016-09-27 */
+/* nvd3 version 1.8.4-dev (https://github.com/novus/nvd3) 2016-09-28 */
 (function(){
 
 // set up main nv object
@@ -779,7 +779,7 @@ nv.models.tooltip = function() {
             // Create new tooltip div if it doesn't exist on DOM.
 
             var data = [1];
-            tooltip = d3.select(document.body).select('#'+id).data(data);
+            tooltip = d3.select(document.body).selectAll('.nvtooltip').data(data);
 
             tooltip.enter().append('div')
                    .attr("class", "nvtooltip " + (classes ? classes : "xy-tooltip"))
