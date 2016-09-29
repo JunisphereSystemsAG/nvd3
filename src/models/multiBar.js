@@ -302,6 +302,8 @@ nv.models.multiBar = function() {
                     .attr('transform', function(d,i) { return 'translate(' + x(getX(d,i)) + ',0)'; })
                 ;
 
+                var lastYs = {};
+
                 texts
                     .text(function(d,i) {
                         var y = getY(d,i);
@@ -314,14 +316,26 @@ nv.models.multiBar = function() {
                     })
                     .attr('y', function(d,i,j) {
                         var height = Math.max(Math.abs(y(d.y+d.y0) - y(d.y0)), 0);
-                        return y(d.y0) - (height / 2.0) + 4;
+                        var posY = y(d.y0) - (height / 2.0) + 4;
+
+                        var lastY = lastYs[d.x];
+
+                        if(d.y){
+                            if(!lastY && posY > y(d.y0) ){
+                              posY = y(d.y0);
+                            } else if(lastY && posY + 8 > lastY){
+                              posY = lastY - 8;
+                            }
+
+                          lastYs[d.x] = posY;
+                        }
+                        return posY;
                     })
                     .attr('transform', function(d,i) { return 'translate(' + x(getX(d,i)) + ',0)'; })
                 ;
             } else {
                 groups.selectAll('text').remove();
             }
-
 
             if (barColor) {
                 if (!disabled) disabled = data.map(function() { return true });
