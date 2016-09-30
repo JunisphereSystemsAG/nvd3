@@ -1,4 +1,4 @@
-/* nvd3 version 1.8.4-dev (https://github.com/novus/nvd3) 2016-09-29 */
+/* nvd3 version 1.8.4-dev (https://github.com/novus/nvd3) 2016-09-30 */
 (function(){
 
 // set up main nv object
@@ -8249,7 +8249,7 @@ nv.models.multiBar = function() {
                 texts.exit().remove();
 
                 texts.enter().append('text')
-                    .attr('text-anchor', 'middle')
+                    .attr('text-anchor', stacked ? 'middle' : 'bottom')
                     .attr("stroke", "none")
                     .attr("fill","black")
                     .attr('x', function(d,i,j) {
@@ -8275,23 +8275,32 @@ nv.models.multiBar = function() {
                         return (stacked && !data[j].nonStackable ? 0 : (j * x.rangeBand() / data.length )) + width / 2.0;
                     })
                     .attr('y', function(d,i,j) {
-                        var height = Math.max(Math.abs(y(d.y+d.y0) - y(d.y0)), 0);
-                        var posY = y(d.y0) - (height / 2.0) + 4;
+                        var posY;
+                        if(stacked && !data[j].nonStackable){
+                            var height = Math.max(Math.abs(y(d.y+d.y0) - y(d.y0)), 0);
+                            posY = y(d.y0) - (height / 2.0) + 4;
 
-                        var lastY = lastYs[d.x];
+                            var lastY = lastYs[d.x];
 
-                        if(d.y){
-                            if(!lastY && posY > y(d.y0) ){
-                              posY = y(d.y0);
-                            } else if(lastY && posY + 8 > lastY){
-                              posY = lastY - 8;
+                            if(d.y){
+                                if(!lastY && posY > y(d.y0) ){
+                                  posY = y(d.y0);
+                                } else if(lastY && posY + 8 > lastY){
+                                  posY = lastY - 8;
+                                }
+
+                              lastYs[d.x] = posY;
                             }
-
-                          lastYs[d.x] = posY;
+                            return posY;
+                        } else {
+                           posY = y(0);
                         }
                         return posY;
                     })
-                    .attr('transform', function(d,i) { return 'translate(' + x(getX(d,i)) + ',0)'; })
+                    .attr('transform', function(d,i,j) {
+                        var width = x.rangeBand() / (stacked && !data[j].nonStackable ? 1 : data.length );
+                        return stacked ? 'translate(' + x(getX(d,i)) + ',0)' : 'translate(' + (x(getX(d,i)) + width / 2.0 + 4) + ',0) rotate(-90,'+j * x.rangeBand() / data.length+','+y(0)+')' ;
+                    })
                 ;
             } else {
                 groups.selectAll('text').remove();
