@@ -64,7 +64,9 @@ nv.models.multiChart = function() {
             chart.container = this;
 
             var availableWidth = nv.utils.availableWidth(width, container, margin),
-                availableHeight = nv.utils.availableHeight(height, container, margin);
+                availableHeight = nv.utils.availableHeight(height, container, margin),
+                fullWidth = nv.utils.sanitizeWidth(width, container);
+
 
             var dataLines1 = data.filter(function(d) {return d.type == 'line' && d.yAxis == 1});
             var dataLines2 = data.filter(function(d) {return d.type == 'line' && d.yAxis == 2});
@@ -127,8 +129,8 @@ nv.models.multiChart = function() {
             if (!showLegend) {
                 g.select('.legendWrap').selectAll('*').remove();
             } else {
-                var legendWidth = legend.align() ? availableWidth / 2 : availableWidth;
-                var legendXPosition = legend.align() ? legendWidth : 0;
+                var legendWidth = legend.align() ? availableWidth / 2 : fullWidth;
+                var legendXPosition = legend.align() ? legendWidth : 0 - (margin.left || 0);
 
                 legend.width(legendWidth);
                 legend.color(color_array);
@@ -141,8 +143,10 @@ nv.models.multiChart = function() {
                     }))
                     .call(legend);
 
-                if (!marginTop && legend.height() !== margin.top) {
-                    margin.top = legend.height();
+                var legendHeight = legend.height() + 10;
+
+                if (!marginTop && legendHeight !== margin.top) {
+                    margin.top = legendHeight;
                     availableHeight = nv.utils.availableHeight(height, container, margin);
                 }
 
