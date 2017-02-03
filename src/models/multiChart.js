@@ -52,6 +52,9 @@ nv.models.multiChart = function() {
         tooltip = nv.models.tooltip(),
         dispatch = d3.dispatch("stateChange");
 
+    lines1.scatter.useVoronoi(false);
+    lines2.scatter.useVoronoi(false);
+
     var charts = [lines1, lines2, scatters1, scatters2, bars1, bars2, stack1, stack2];
 
     function chart(selection) {
@@ -233,24 +236,43 @@ nv.models.multiChart = function() {
             bars2.yDomain(yScale2.domain());
             stack2.yDomain(yScale2.domain());
 
+            var rbcOffset = 0;
+
             if(dataStack1.length){d3.transition(stack1Wrap).call(stack1);}
             if(dataStack2.length){d3.transition(stack2Wrap).call(stack2);}
 
-            if(dataBars1.length){d3.transition(bars1Wrap).call(bars1);}
-            if(dataBars2.length){d3.transition(bars2Wrap).call(bars2);}
+            if (dataBars1.length) {
+                 d3.transition(bars1Wrap).call(bars1);
+                 rbcOffset = bars1.rangeBandCentreOffset();
+            }
+            if (dataBars2.length) {
+                d3.transition(bars2Wrap).call(bars2);
+                 bcOffset = bars2.rangeBandCentreOffset();
+            }
 
-            if(dataLines1.length){d3.transition(lines1Wrap).call(lines1);}
-            if(dataLines2.length){d3.transition(lines2Wrap).call(lines2);}
+            if (dataLines1.length) {
+                lines1.scatter.padData(rbcOffset > 0);
+                d3.transition(lines1Wrap).call(lines1);
+            }
+            if (dataLines2.length) {
+                lines2.scatter.padData(rbcOffset > 0);
+                d3.transition(lines2Wrap).call(lines2);
+            }
 
             if(dataScatters1.length){d3.transition(scatters1Wrap).call(scatters1);}
             if(dataScatters2.length){d3.transition(scatters2Wrap).call(scatters2);}
 
             xAxis
+                .scale(x)
                 ._ticks( nv.utils.calcTicksX(availableWidth/100, data) )
                 .tickSize(-availableHeight, 0);
 
             g.select('.nv-x.nv-axis')
-                .attr('transform', 'translate(0,' + availableHeight + ')');
+                .attr('transform',
+                       'translate(' + rbcOffset + ', ' + availableHeight + ') ' +
+                       'scale(' + ((availableWidth - rbcOffset*2)/availableWidth) + ', 1)'
+                )
+
             d3.transition(g.select('.nv-x.nv-axis'))
                 .call(xAxis);
 

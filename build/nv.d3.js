@@ -7988,6 +7988,7 @@ nv.models.multiBar = function() {
         , showValues = false
         , groupSpacing = 0.1
         , fillOpacity = 0.75
+        , rangeBandCentreOffset = 0
         , dispatch = d3.dispatch('chartClick', 'elementClick', 'elementDblClick', 'elementMouseover', 'elementMouseout', 'elementMousemove', 'renderEnd')
         ;
 
@@ -8091,6 +8092,8 @@ nv.models.multiBar = function() {
 
             x.domain(xDomain || d3.merge(seriesData).map(function(d) { return d.x }))
                 .rangeBands(xRange || [0, availableWidth], groupSpacing);
+
+            rangeBandCentreOffset = x.rangeBand() / 2.0 + (groupSpacing * x.rangeBand()); // Verify groupSpacing part later.
 
             y.domain(yDomain || d3.extent(d3.merge(seriesData).map(function(d) {
                 var domain = d.y;
@@ -8430,6 +8433,7 @@ nv.models.multiBar = function() {
         id:          {get: function(){return id;}, set: function(_){id=_;}},
         hideable:    {get: function(){return hideable;}, set: function(_){hideable=_;}},
         groupSpacing:{get: function(){return groupSpacing;}, set: function(_){groupSpacing=_;}},
+        rangeBandCentreOffset: {get: function() {return rangeBandCentreOffset;}, set: function(_) {rangeBandCentreOffset = _;}},
         fillOpacity: {get: function(){return fillOpacity;}, set: function(_){fillOpacity=_;}},
         showValues: {get: function(){return showValues;}, set: function(_){showValues=_;}},
 
@@ -9778,6 +9782,9 @@ nv.models.multiChart = function() {
         tooltip = nv.models.tooltip(),
         dispatch = d3.dispatch("stateChange");
 
+    lines1.scatter.useVoronoi(false);
+    lines2.scatter.useVoronoi(false);
+
     var charts = [lines1, lines2, scatters1, scatters2, bars1, bars2, stack1, stack2];
 
     function chart(selection) {
@@ -9959,24 +9966,43 @@ nv.models.multiChart = function() {
             bars2.yDomain(yScale2.domain());
             stack2.yDomain(yScale2.domain());
 
+            var rbcOffset = 0;
+
             if(dataStack1.length){d3.transition(stack1Wrap).call(stack1);}
             if(dataStack2.length){d3.transition(stack2Wrap).call(stack2);}
 
-            if(dataBars1.length){d3.transition(bars1Wrap).call(bars1);}
-            if(dataBars2.length){d3.transition(bars2Wrap).call(bars2);}
+            if (dataBars1.length) {
+                 d3.transition(bars1Wrap).call(bars1);
+                 rbcOffset = bars1.rangeBandCentreOffset();
+            }
+            if (dataBars2.length) {
+                d3.transition(bars2Wrap).call(bars2);
+                 bcOffset = bars2.rangeBandCentreOffset();
+            }
 
-            if(dataLines1.length){d3.transition(lines1Wrap).call(lines1);}
-            if(dataLines2.length){d3.transition(lines2Wrap).call(lines2);}
+            if (dataLines1.length) {
+                lines1.scatter.padData(rbcOffset > 0);
+                d3.transition(lines1Wrap).call(lines1);
+            }
+            if (dataLines2.length) {
+                lines2.scatter.padData(rbcOffset > 0);
+                d3.transition(lines2Wrap).call(lines2);
+            }
 
             if(dataScatters1.length){d3.transition(scatters1Wrap).call(scatters1);}
             if(dataScatters2.length){d3.transition(scatters2Wrap).call(scatters2);}
 
             xAxis
+                .scale(x)
                 ._ticks( nv.utils.calcTicksX(availableWidth/100, data) )
                 .tickSize(-availableHeight, 0);
 
             g.select('.nv-x.nv-axis')
-                .attr('transform', 'translate(0,' + availableHeight + ')');
+                .attr('transform',
+                       'translate(' + rbcOffset + ', ' + availableHeight + ') ' +
+                       'scale(' + ((availableWidth - rbcOffset*2)/availableWidth) + ', 1)'
+                )
+
             d3.transition(g.select('.nv-x.nv-axis'))
                 .call(xAxis);
 
