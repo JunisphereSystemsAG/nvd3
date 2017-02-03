@@ -8175,7 +8175,18 @@ nv.models.multiBar = function() {
                     .attr('y', function(d,i,j) { return y0(stacked && !data[j].nonStackable ? d.y0 : 0) || 0 })
                     .attr('height', 0)
                     .attr('width', function(d,i,j) { return x.rangeBand() / (stacked && !data[j].nonStackable ? 1 : data.length) })
+<<<<<<< HEAD
                     .attr('transform', function(d,i) { return 'translate(' + x(getX(d,i)) + ',0)'; })
+=======
+                    .attr('transform', function(d,i,j) {
+                      var w = (x.rangeBand() / (stacked && !data[j].nonStackable ? 1 : data.length));
+                      var sectionWidth = availableWidth/(bars.enter()[0].length - 1);
+                      if(bars.enter().length == 2)
+                        return 'translate(' + ((i-1)*w + i*w + (i*(sectionWidth - 2*w))) + ',0)';
+                      else
+                        return 'translate(' + ((i-0.5)*w + i*(sectionWidth - w)) + ',0)';
+                    })
+>>>>>>> 998c74a... Add j
                 ;
             bars
                 .style('fill', function(d,i,j){ return color(d, j, i);  })
@@ -8224,7 +8235,83 @@ nv.models.multiBar = function() {
                 });
             bars
                 .attr('class', function(d,i) { return getY(d,i) < 0 ? 'nv-bar negative' : 'nv-bar positive'})
+<<<<<<< HEAD
                 .attr('transform', function(d,i) { return 'translate(' + x(getX(d,i)) + ',0)'; })
+=======
+                .attr('transform', function(d,i,j) {
+                    var w = (x.rangeBand() / (stacked && !data[j].nonStackable ? 1 : data.length));
+                    var sectionWidth = availableWidth/(bars.enter()[0].length - 1);
+                    if(bars.enter().length == 2)
+                        return 'translate(' + ((i-1)*w + i*w + (i*(sectionWidth - 2*w))) + ',0)';
+                    else
+                        return 'translate(' + ((i-0.5)*w + i*(sectionWidth - w)) + ',0)';
+                 })
+
+
+            if (showValues) {
+                var texts = groups.selectAll("text")
+                    .data(function(d) { return (hideable && !data.length) ? hideable.values : d.values });;
+
+                texts.exit().remove();
+
+                texts.enter().append('text')
+                    .attr('text-anchor', stacked ? 'middle' : 'bottom')
+                    .attr("stroke", "none")
+                    .attr("fill","black")
+                    .attr('x', function(d,i,j) {
+                        var width = x.rangeBand() / (stacked && !data[j].nonStackable ? 1 : data.length );
+                        return (stacked && !data[j].nonStackable ? 0 : (j * x.rangeBand() / data.length )) + width / 2.0;
+                    })
+                    .attr('y', function(d,i,j) {
+                        return 0;
+                    })
+                    .attr('transform', function(d,i) { return 'translate(' + x(getX(d,i)) + ',0)'; })
+                ;
+
+                var lastYs = {};
+
+                texts
+                    .text(function(d,i) {
+                        var y = getY(d,i);
+                        return y != 0 ? y : "";
+                    })
+                    .watchTransition(renderWatch, 'multibar: bars texts')
+                    .attr('x', function(d,i,j) {
+                        var width = x.rangeBand() / (stacked && !data[j].nonStackable ? 1 : data.length );
+                        return (stacked && !data[j].nonStackable ? 0 : (j * x.rangeBand() / data.length )) + width / 2.0;
+                    })
+                    .attr('y', function(d,i,j) {
+                        var posY;
+                        if(stacked && !data[j].nonStackable){
+                            var height = Math.max(Math.abs(y(d.y+d.y0) - y(d.y0)), 0);
+                            posY = y(d.y0) - (height / 2.0) + 4;
+
+                            var lastY = lastYs[d.x];
+
+                            if(d.y){
+                                if(!lastY && posY > y(d.y0) ){
+                                  posY = y(d.y0);
+                                } else if(lastY && posY + 8 > lastY){
+                                  posY = lastY - 8;
+                                }
+
+                              lastYs[d.x] = posY;
+                            }
+                            return posY;
+                        } else {
+                           posY = y(0);
+                        }
+                        return posY;
+                    })
+                    .attr('transform', function(d,i,j) {
+                        var width = x.rangeBand() / (stacked && !data[j].nonStackable ? 1 : data.length );
+                        return stacked ? 'translate(' + x(getX(d,i)) + ',0)' : 'translate(' + (x(getX(d,i)) + width / 2.0 + 4) + ',0) rotate(-90,'+j * x.rangeBand() / data.length+','+y(0)+')' ;
+                    })
+                ;
+            } else {
+                groups.selectAll('text').remove();
+            }
+>>>>>>> 998c74a... Add j
 
             if (barColor) {
                 if (!disabled) disabled = data.map(function() { return true });
