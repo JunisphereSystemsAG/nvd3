@@ -8187,7 +8187,7 @@ nv.models.multiBar = function() {
                     .attr('y', function(d,i,j) { return y0(stacked && !data[j].nonStackable ? d.y0 : 0) || 0 })
                     .attr('height', 0)
                     .attr('width', function(d,i,j) { return x.rangeBand() / (stacked && !data[j].nonStackable ? 1 : data.length) })
-                    .attr('transform', function(d,i) {
+                    .attr('transform', function(d,i,j) {
                       var w = (x.rangeBand() / (stacked && !data[j].nonStackable ? 1 : data.length));
                       var sectionWidth = availableWidth/(bars.enter()[0].length - 1);
                       if(bars.enter().length == 2)
@@ -8243,7 +8243,7 @@ nv.models.multiBar = function() {
                 });
             bars
                 .attr('class', function(d,i) { return getY(d,i) < 0 ? 'nv-bar negative' : 'nv-bar positive'})
-                .attr('transform', function(d,i) {
+                .attr('transform', function(d,i,j) {
                     var w = (x.rangeBand() / (stacked && !data[j].nonStackable ? 1 : data.length));
                     var sectionWidth = availableWidth/(bars.enter()[0].length - 1);
                     if(bars.enter().length == 2)
