@@ -8177,6 +8177,7 @@ nv.models.multiBar = function() {
                     .attr('width', function(d,i,j) { return x.rangeBand() / (stacked && !data[j].nonStackable ? 1 : data.length) })
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
                     .attr('transform', function(d,i) { return 'translate(' + x(getX(d,i)) + ',0)'; })
 =======
                     .attr('transform', function(d,i,j) {
@@ -8188,6 +8189,9 @@ nv.models.multiBar = function() {
                         return 'translate(' + ((i-0.5)*w + i*(sectionWidth - w)) + ',0)';
                     })
 >>>>>>> 998c74a... Add j
+=======
+                    .attr('transform', function(d,i) { return 'translate(' + x(getX(d,i)) + ',0)'; })
+>>>>>>> a9da7ec... Revert
 =======
                     .attr('transform', function(d,i) { return 'translate(' + x(getX(d,i)) + ',0)'; })
 >>>>>>> a9da7ec... Revert
@@ -8241,6 +8245,7 @@ nv.models.multiBar = function() {
                 .attr('class', function(d,i) { return getY(d,i) < 0 ? 'nv-bar negative' : 'nv-bar positive'})
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
                 .attr('transform', function(d,i) { return 'translate(' + x(getX(d,i)) + ',0)'; })
 =======
                 .attr('transform', function(d,i,j) {
@@ -8251,6 +8256,9 @@ nv.models.multiBar = function() {
                     else
                         return 'translate(' + ((i-0.5)*w + i*(sectionWidth - w)) + ',0)';
                  })
+=======
+                .attr('transform', function(d,i) { return 'translate(' + x(getX(d,i)) + ',0)'; })
+>>>>>>> a9da7ec... Revert
 =======
                 .attr('transform', function(d,i) { return 'translate(' + x(getX(d,i)) + ',0)'; })
 >>>>>>> a9da7ec... Revert
