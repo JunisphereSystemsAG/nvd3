@@ -8176,6 +8176,7 @@ nv.models.multiBar = function() {
                     .attr('height', 0)
                     .attr('width', function(d,i,j) { return x.rangeBand() / (stacked && !data[j].nonStackable ? 1 : data.length) })
 <<<<<<< HEAD
+<<<<<<< HEAD
                     .attr('transform', function(d,i) { return 'translate(' + x(getX(d,i)) + ',0)'; })
 =======
                     .attr('transform', function(d,i,j) {
@@ -8187,6 +8188,9 @@ nv.models.multiBar = function() {
                         return 'translate(' + ((i-0.5)*w + i*(sectionWidth - w)) + ',0)';
                     })
 >>>>>>> 998c74a... Add j
+=======
+                    .attr('transform', function(d,i) { return 'translate(' + x(getX(d,i)) + ',0)'; })
+>>>>>>> a9da7ec... Revert
                 ;
             bars
                 .style('fill', function(d,i,j){ return color(d, j, i);  })
@@ -8236,6 +8240,7 @@ nv.models.multiBar = function() {
             bars
                 .attr('class', function(d,i) { return getY(d,i) < 0 ? 'nv-bar negative' : 'nv-bar positive'})
 <<<<<<< HEAD
+<<<<<<< HEAD
                 .attr('transform', function(d,i) { return 'translate(' + x(getX(d,i)) + ',0)'; })
 =======
                 .attr('transform', function(d,i,j) {
@@ -8246,6 +8251,9 @@ nv.models.multiBar = function() {
                     else
                         return 'translate(' + ((i-0.5)*w + i*(sectionWidth - w)) + ',0)';
                  })
+=======
+                .attr('transform', function(d,i) { return 'translate(' + x(getX(d,i)) + ',0)'; })
+>>>>>>> a9da7ec... Revert
 
 
             if (showValues) {
