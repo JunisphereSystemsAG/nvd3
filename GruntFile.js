@@ -1,6 +1,9 @@
 module.exports = function(grunt) {
     var _pkg = grunt.file.readJSON('package.json');
 
+    // allows autoprefixer to work on older node_js versions
+    require('es6-promise').polyfill();
+
     //Project configuration.
     grunt.initConfig({
         pkg: _pkg,
@@ -86,6 +89,22 @@ module.exports = function(grunt) {
                 ]
             }
         },
+        postcss: {
+            options: {
+                processors: [
+                    require('autoprefixer')({
+                        browsers: [
+                            'last 2 versions',
+                            'last 3 iOS versions',
+                            'last 2 safari versions',
+                            'ie >= 9']
+                    })
+                ]
+            },
+            dist: {
+                src: 'build/nv.d3.css'
+            }
+        },
         cssmin: {
             options: {
                 sourceMap: true
@@ -138,12 +157,13 @@ module.exports = function(grunt) {
     grunt.loadNpmTasks('grunt-contrib-jshint');
     grunt.loadNpmTasks('grunt-contrib-uglify');
     grunt.loadNpmTasks('grunt-contrib-copy');
+    grunt.loadNpmTasks('grunt-postcss');
     grunt.loadNpmTasks('grunt-contrib-cssmin');
     grunt.loadNpmTasks('grunt-karma');
     grunt.loadNpmTasks('grunt-text-replace');
 
-    grunt.registerTask('default', ['concat','copy','karma:unit']);
-    grunt.registerTask('production', ['concat', 'uglify', 'copy', 'cssmin', 'replace']);
+    grunt.registerTask('default', ['concat', 'copy', 'postcss', 'karma:unit']);
+    grunt.registerTask('production', ['concat', 'uglify', 'copy', 'postcss', 'cssmin', 'replace']);
     grunt.registerTask('release', ['production']);
     grunt.registerTask('lint', ['jshint']);
 };
