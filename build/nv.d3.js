@@ -1,4 +1,4 @@
-/* nvd3 version 1.8.5-dev (https://github.com/novus/nvd3) 2017-02-03 */
+/* nvd3 version 1.8.5-dev (https://github.com/novus/nvd3) 2017-02-06 */
 (function(){
 
 // set up main nv object
@@ -8093,7 +8093,7 @@ nv.models.multiBar = function() {
             x.domain(xDomain || d3.merge(seriesData).map(function(d) { return d.x }))
                 .rangeBands(xRange || [0, availableWidth], groupSpacing);
 
-            rangeBandCentreOffset = x.rangeBand() / 2.0 + (groupSpacing * x.rangeBand()); // Verify groupSpacing part later.
+            rangeBandCentreOffset = x.rangeBand() / 2.0 + (x.rangeBand() * groupSpacing * 2); // Verify groupSpacing part later.
 
             y.domain(yDomain || d3.extent(d3.merge(seriesData).map(function(d) {
                 var domain = d.y;
@@ -9782,9 +9782,6 @@ nv.models.multiChart = function() {
         tooltip = nv.models.tooltip(),
         dispatch = d3.dispatch("stateChange");
 
-    lines1.scatter.useVoronoi(false);
-    lines2.scatter.useVoronoi(false);
-
     var charts = [lines1, lines2, scatters1, scatters2, bars1, bars2, stack1, stack2];
 
     function chart(selection) {
@@ -9967,25 +9964,34 @@ nv.models.multiChart = function() {
             stack2.yDomain(yScale2.domain());
 
             var rbcOffset = 0;
+            var groupSpacing;
 
             if(dataStack1.length){d3.transition(stack1Wrap).call(stack1);}
             if(dataStack2.length){d3.transition(stack2Wrap).call(stack2);}
 
             if (dataBars1.length) {
-                 d3.transition(bars1Wrap).call(bars1);
-                 rbcOffset = bars1.rangeBandCentreOffset();
+                d3.transition(bars1Wrap).call(bars1);
+                rbcOffset = bars1.rangeBandCentreOffset();
+                groupSpacing = bars1.groupSpacing();
             }
             if (dataBars2.length) {
                 d3.transition(bars2Wrap).call(bars2);
-                 bcOffset = bars2.rangeBandCentreOffset();
+                rbcOffset = bars2.rangeBandCentreOffset();
+                groupSpacing = bars2.groupSpacing();
             }
 
             if (dataLines1.length) {
-                lines1.scatter.padData(rbcOffset > 0);
+                if(rbcOffset > 0){
+                  lines1.padData(true);
+                  lines1.padDataOuter(groupSpacing);
+                }
                 d3.transition(lines1Wrap).call(lines1);
             }
             if (dataLines2.length) {
-                lines2.scatter.padData(rbcOffset > 0);
+                if(rbcOffset > 0){
+                  lines2.padData(true);
+                  lines2.padDataOuter(groupSpacing);
+                }
                 d3.transition(lines2Wrap).call(lines2);
             }
 
@@ -10148,7 +10154,7 @@ nv.models.multiChart = function() {
             if(useInteractiveGuideline){
                 interactiveLayer.dispatch.on('elementMousemove', function(e) {
                     clearHighlights();
-                    var singlePoint, pointIndex, pointXLocation, allData = [];
+                    var singlePoint, pointIndex, pointXLocation, ordinalX, ordinalWidth, value, allData = [];
                     data
                     .filter(function(series, i) {
                         series.seriesIndex = i;
@@ -10160,7 +10166,16 @@ nv.models.multiChart = function() {
                             return chart.x()(d,i) >= extent[0] && chart.x()(d,i) <= extent[1];
                         });
 
-                        pointIndex = nv.interactiveBisect(currentValues, e.pointXValue, chart.x());
+                        if(rbcOffset > 0) {
+                            ordinalWidth = availableWidth - rbcOffset * 2
+                            ordinalX = e.mouseX - rbcOffset;
+                            value = ordinalX / ordinalWidth * extent[1];
+                        } else {
+                            value = e.pointXValue;
+                        }
+
+                        pointIndex = nv.interactiveBisect(currentValues, value, chart.x());
+
                         var point = currentValues[pointIndex];
                         var pointYValue = chart.y()(point, pointIndex);
                         if (pointYValue !== null) {
@@ -10168,7 +10183,16 @@ nv.models.multiChart = function() {
                         }
                         if (point === undefined) return;
                         if (singlePoint === undefined) singlePoint = point;
-                        if (pointXLocation === undefined) pointXLocation = x(chart.x()(point,pointIndex));
+
+                        if (pointXLocation === undefined){
+                            if(rbcOffset > 0) {
+                                ordinalX = point.x / extent[1] * ordinalWidth;
+                                pointXLocation = ordinalX + rbcOffset;
+                            } else {
+                                pointXLocation = x(chart.x()(point,pointIndex));
+                            }
+                        }
+
                         allData.push({
                             key: series.key,
                             value: pointYValue,
