@@ -1,4 +1,8 @@
+<<<<<<< HEAD
 /* nvd3 version 1.8.5-dev (https://github.com/novus/nvd3) 2016-12-08 */
+=======
+/* nvd3 version 1.8.5-dev (https://github.com/novus/nvd3) 2017-02-06 */
+>>>>>>> e62237b... Fix ordinal scale padding
 .nvd3 .nv-axis {
     pointer-events:none;
     opacity: 1;
