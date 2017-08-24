@@ -281,7 +281,6 @@ nv.models.multiBar = function() {
                 .attr('class', function(d,i) { return getY(d,i) < 0 ? 'nv-bar negative' : 'nv-bar positive'})
                 .attr('transform', function(d,i) { return 'translate(' + x(getX(d,i)) + ',0)'; })
 
-
             if (showValues) {
                 var texts = groups.selectAll("text")
                     .data(function(d) { return (hideable && !data.length) ? hideable.values : d.values });;
@@ -339,7 +338,7 @@ nv.models.multiBar = function() {
                     })
                     .attr('transform', function(d,i,j) {
                         var width = x.rangeBand() / (stacked && !data[j].nonStackable ? 1 : data.length );
-                        return stacked ? 'translate(' + x(getX(d,i)) + ',0)' : 'translate(' + (x(getX(d,i)) + width / 2.0 + 4) + ',0) rotate(-90,'+j * x.rangeBand() / data.length+','+y(0)+')' ;
+                        return stacked ? 'translate(' + x(getX(d,i)) + ',' + (0) + ')' : 'translate(' + (x(getX(d,i)) + width / 2.0 + 4) + ',' + (y(yDomain[0]) - y(0)) + ') rotate(-90,'+j * x.rangeBand() / data.length+','+y(0)+')' ;
                     })
                 ;
             } else {
