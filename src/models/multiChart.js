@@ -56,9 +56,6 @@ nv.models.multiChart = function() {
 
     function chart(selection) {
         selection.each(function(data) {
-
-            console.log(data);
-
             var container = d3.select(this),
                 that = this;
             nv.utils.initSVG(container);
