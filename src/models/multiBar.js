@@ -29,6 +29,7 @@ nv.models.multiBar = function() {
         , xRange
         , yRange
         , showValues = false
+        , valueFormat = function(v) { return v }
         , groupSpacing = 0.1
         , fillOpacity = 0.75
         , dispatch = d3.dispatch('chartClick', 'elementClick', 'elementDblClick', 'elementMouseover', 'elementMouseout', 'elementMousemove', 'renderEnd')
@@ -306,7 +307,7 @@ nv.models.multiBar = function() {
                 texts
                     .text(function(d,i) {
                         var y = getY(d,i);
-                        return y != 0 ? y : "";
+                        return y != 0 ? valueFormat(y) : "";
                     })
                     .watchTransition(renderWatch, 'multibar: bars texts')
                     .attr('x', function(d,i,j) {
@@ -338,7 +339,7 @@ nv.models.multiBar = function() {
                     })
                     .attr('transform', function(d,i,j) {
                         var width = x.rangeBand() / (stacked && !data[j].nonStackable ? 1 : data.length );
-                        return stacked ? 'translate(' + x(getX(d,i)) + ',' + (0) + ')' : 'translate(' + (x(getX(d,i)) + width / 2.0 + 4) + ',' + (y(yDomain[0]) - y(0)) + ') rotate(-90,'+j * x.rangeBand() / data.length+','+y(0)+')' ;
+                        return stacked ? 'translate(' + x(getX(d,i)) + ',' + (0) + ')' : 'translate(' + (x(getX(d,i)) + width / 2.0 + 4) + ',' + (y(yDomain[0]) - y(0) - (data[j].valueLabelOffset || 0)) + ') rotate(-90,'+j * x.rangeBand() / data.length+','+y(0)+')' ;
                     })
                 ;
             } else {
@@ -474,6 +475,7 @@ nv.models.multiBar = function() {
         groupSpacing:{get: function(){return groupSpacing;}, set: function(_){groupSpacing=_;}},
         fillOpacity: {get: function(){return fillOpacity;}, set: function(_){fillOpacity=_;}},
         showValues: {get: function(){return showValues;}, set: function(_){showValues=_;}},
+        valueFormat: {get: function(){return valueFormat;}, set: function(_){valueFormat=_;}},
 
         // options that require extra logic in the setter
         margin: {get: function(){return margin;}, set: function(_){
