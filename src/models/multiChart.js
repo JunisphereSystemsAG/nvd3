@@ -50,7 +50,7 @@ nv.models.multiChart = function() {
 
         legend = nv.models.legend().height(30),
         tooltip = nv.models.tooltip(),
-        dispatch = d3.dispatch();
+        dispatch = d3.dispatch("stateChange");
 
     var charts = [lines1, lines2, scatters1, scatters2, bars1, bars2, stack1, stack2];
 
@@ -64,7 +64,9 @@ nv.models.multiChart = function() {
             chart.container = this;
 
             var availableWidth = nv.utils.availableWidth(width, container, margin),
-                availableHeight = nv.utils.availableHeight(height, container, margin);
+                availableHeight = nv.utils.availableHeight(height, container, margin),
+                fullWidth = nv.utils.sanitizeWidth(width, container);
+
 
             var dataLines1 = data.filter(function(d) {return d.type == 'line' && d.yAxis == 1});
             var dataLines2 = data.filter(function(d) {return d.type == 'line' && d.yAxis == 2});
@@ -127,8 +129,8 @@ nv.models.multiChart = function() {
             if (!showLegend) {
                 g.select('.legendWrap').selectAll('*').remove();
             } else {
-                var legendWidth = legend.align() ? availableWidth / 2 : availableWidth;
-                var legendXPosition = legend.align() ? legendWidth : 0;
+                var legendWidth = legend.align() ? availableWidth / 2 : fullWidth;
+                var legendXPosition = legend.align() ? legendWidth : 0 - (margin.left || 0);
 
                 legend.width(legendWidth);
                 legend.color(color_array);
@@ -141,8 +143,10 @@ nv.models.multiChart = function() {
                     }))
                     .call(legend);
 
-                if (!marginTop && legend.height() !== margin.top) {
-                    margin.top = legend.height();
+                var legendHeight = legend.height() + 10;
+
+                if (!marginTop && legendHeight !== margin.top) {
+                    margin.top = legendHeight;
                     availableHeight = nv.utils.availableHeight(height, container, margin);
                 }
 
@@ -229,24 +233,52 @@ nv.models.multiChart = function() {
             bars2.yDomain(yScale2.domain());
             stack2.yDomain(yScale2.domain());
 
+            var rbcOffset = 0;
+            var groupSpacing;
+
             if(dataStack1.length){d3.transition(stack1Wrap).call(stack1);}
             if(dataStack2.length){d3.transition(stack2Wrap).call(stack2);}
 
-            if(dataBars1.length){d3.transition(bars1Wrap).call(bars1);}
-            if(dataBars2.length){d3.transition(bars2Wrap).call(bars2);}
+            if (dataBars1.length) {
+                d3.transition(bars1Wrap).call(bars1);
+                rbcOffset = bars1.rangeBandCentreOffset();
+                groupSpacing = bars1.groupSpacing();
+            }
+            if (dataBars2.length) {
+                d3.transition(bars2Wrap).call(bars2);
+                rbcOffset = bars2.rangeBandCentreOffset();
+                groupSpacing = bars2.groupSpacing();
+            }
 
-            if(dataLines1.length){d3.transition(lines1Wrap).call(lines1);}
-            if(dataLines2.length){d3.transition(lines2Wrap).call(lines2);}
+            if (dataLines1.length) {
+                if(rbcOffset > 0){
+                  lines1.padData(true);
+                  lines1.padDataOuter(groupSpacing);
+                }
+                d3.transition(lines1Wrap).call(lines1);
+            }
+            if (dataLines2.length) {
+                if(rbcOffset > 0){
+                  lines2.padData(true);
+                  lines2.padDataOuter(groupSpacing);
+                }
+                d3.transition(lines2Wrap).call(lines2);
+            }
 
             if(dataScatters1.length){d3.transition(scatters1Wrap).call(scatters1);}
             if(dataScatters2.length){d3.transition(scatters2Wrap).call(scatters2);}
 
             xAxis
+                .scale(x)
                 ._ticks( nv.utils.calcTicksX(availableWidth/100, data) )
                 .tickSize(-availableHeight, 0);
 
             g.select('.nv-x.nv-axis')
-                .attr('transform', 'translate(0,' + availableHeight + ')');
+                .attr('transform',
+                       'translate(' + rbcOffset + ', ' + availableHeight + ') ' +
+                       'scale(' + ((availableWidth - rbcOffset*2)/availableWidth) + ', 1)'
+                )
+
             d3.transition(g.select('.nv-x.nv-axis'))
                 .call(xAxis);
 
@@ -275,6 +307,7 @@ nv.models.multiChart = function() {
 
             legend.dispatch.on('stateChange', function(newState) {
                 chart.update();
+                dispatch.stateChange(newState);
             });
 
             if(useInteractiveGuideline){
@@ -302,7 +335,7 @@ nv.models.multiChart = function() {
                 tooltip
                     .duration(0)
                     .headerFormatter(function(d, i) {
-                    	return xAxis.tickFormat()(d, i);
+                        return xAxis.tickFormat()(d, i);
                     })
                     .valueFormatter(function(d, i) {
                         return yaxis.tickFormat()(d, i);
@@ -322,7 +355,7 @@ nv.models.multiChart = function() {
                 tooltip
                     .duration(100)
                     .headerFormatter(function(d, i) {
-                    	return xAxis.tickFormat()(d, i);
+                        return xAxis.tickFormat()(d, i);
                     })
                     .valueFormatter(function(d, i) {
                         return yaxis.tickFormat()(d, i);
@@ -338,7 +371,7 @@ nv.models.multiChart = function() {
                 tooltip
                     .duration(0)
                     .headerFormatter(function(d, i) {
-                    	return xAxis.tickFormat()(d, i);
+                        return xAxis.tickFormat()(d, i);
                     })
                     .valueFormatter(function(d, i) {
                         return yaxis.tickFormat()(d, i);
@@ -359,7 +392,7 @@ nv.models.multiChart = function() {
                 tooltip
                     .duration(0)
                     .headerFormatter(function(d, i) {
-                    	return xAxis.tickFormat()(d, i);
+                        return xAxis.tickFormat()(d, i);
                     })
                     .valueFormatter(function(d, i) {
                         return yaxis.tickFormat()(d, i);
@@ -391,7 +424,7 @@ nv.models.multiChart = function() {
             if(useInteractiveGuideline){
                 interactiveLayer.dispatch.on('elementMousemove', function(e) {
                     clearHighlights();
-                    var singlePoint, pointIndex, pointXLocation, allData = [];
+                    var singlePoint, pointIndex, pointXLocation, ordinalX, ordinalWidth, value, allData = [];
                     data
                     .filter(function(series, i) {
                         series.seriesIndex = i;
@@ -403,7 +436,16 @@ nv.models.multiChart = function() {
                             return chart.x()(d,i) >= extent[0] && chart.x()(d,i) <= extent[1];
                         });
 
-                        pointIndex = nv.interactiveBisect(currentValues, e.pointXValue, chart.x());
+                        if(rbcOffset > 0) {
+                            ordinalWidth = availableWidth - rbcOffset * 2
+                            ordinalX = e.mouseX - rbcOffset;
+                            value = ordinalX / ordinalWidth * extent[1];
+                        } else {
+                            value = e.pointXValue;
+                        }
+
+                        pointIndex = nv.interactiveBisect(currentValues, value, chart.x());
+
                         var point = currentValues[pointIndex];
                         var pointYValue = chart.y()(point, pointIndex);
                         if (pointYValue !== null) {
@@ -411,7 +453,16 @@ nv.models.multiChart = function() {
                         }
                         if (point === undefined) return;
                         if (singlePoint === undefined) singlePoint = point;
-                        if (pointXLocation === undefined) pointXLocation = x(chart.x()(point,pointIndex));
+
+                        if (pointXLocation === undefined){
+                            if(rbcOffset > 0) {
+                                ordinalX = point.x / extent[1] * ordinalWidth;
+                                pointXLocation = ordinalX + rbcOffset;
+                            } else {
+                                pointXLocation = x(chart.x()(point,pointIndex));
+                            }
+                        }
+
                         allData.push({
                             key: series.key,
                             value: pointYValue,

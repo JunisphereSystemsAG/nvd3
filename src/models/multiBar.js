@@ -30,6 +30,7 @@ nv.models.multiBar = function() {
         , yRange
         , groupSpacing = 0.1
         , fillOpacity = 0.75
+        , rangeBandCentreOffset = 0
         , dispatch = d3.dispatch('chartClick', 'elementClick', 'elementDblClick', 'elementMouseover', 'elementMouseout', 'elementMousemove', 'renderEnd')
         ;
 
@@ -134,6 +135,8 @@ nv.models.multiBar = function() {
             x.domain(xDomain || d3.merge(seriesData).map(function(d) { return d.x }))
                 .rangeBands(xRange || [0, availableWidth], groupSpacing);
 
+            rangeBandCentreOffset = x.rangeBand() / 2.0 + (x.rangeBand() * groupSpacing * 2); // Verify groupSpacing part later.
+
             y.domain(yDomain || d3.extent(d3.merge(seriesData).map(function(d) {
                 var domain = d.y;
                 // increase the domain range if this series is stackable
@@ -200,6 +203,7 @@ nv.models.multiBar = function() {
                 })
                 .attr('height', 0)
                 .remove();
+
             if (exitTransition.delay)
                 exitTransition.delay(function(d,i) {
                     var delay = i * (duration / (last_datalength + 1)) - i;
@@ -289,6 +293,7 @@ nv.models.multiBar = function() {
                     .delay(function(d,i) {
                         return i * duration / data[0].values.length;
                     });
+
             if (stacked){
                 barSelection
                     .attr('y', function(d,i,j) {
@@ -403,6 +408,7 @@ nv.models.multiBar = function() {
         id:          {get: function(){return id;}, set: function(_){id=_;}},
         hideable:    {get: function(){return hideable;}, set: function(_){hideable=_;}},
         groupSpacing:{get: function(){return groupSpacing;}, set: function(_){groupSpacing=_;}},
+        rangeBandCentreOffset: {get: function() {return rangeBandCentreOffset;}, set: function(_) {rangeBandCentreOffset = _;}},
         fillOpacity: {get: function(){return fillOpacity;}, set: function(_){fillOpacity=_;}},
 
         // options that require extra logic in the setter
