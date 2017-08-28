@@ -9805,8 +9805,8 @@ nv.models.multiChart = function() {
             var dataStack1 = data.filter(function(d) {return d.type == 'area' && d.yAxis == 1});
             var dataStack2 = data.filter(function(d) {return d.type == 'area' && d.yAxis == 2});
 
-            dataBars1 = dataBars1.map(function(d) {return d.yAxis == 1 ? d : {key: "multiAxisPlaceholder", values: d.values.map(function(v){return {x: v.x, y: 0};})}});
-            dataBars2 = dataBars2.map(function(d) {return d.yAxis == 2 ? d : {key: "multiAxisPlaceholder", values: d.values.map(function(v){return {x: v.x, y: 0};})}});
+            dataBars1 = dataBars1.map(function(d) {return d.yAxis == 1 ? d : {key: "multiAxisPlaceholder", disabled: d.disabled, values: d.values.map(function(v){return {x: v.x, y: 0};})}});
+            dataBars2 = dataBars2.map(function(d) {return d.yAxis == 2 ? d : {key: "multiAxisPlaceholder", disabled: d.disabled, values: d.values.map(function(v){return {x: v.x, y: 0};})}});
 
             // Display noData message if there's nothing to show.
             if (!data || !data.length || !data.filter(function(d) { return d.values.length }).length) {
