@@ -28,6 +28,7 @@ nv.models.multiBar = function() {
         , yDomain
         , xRange
         , yRange
+        , showValues = false
         , groupSpacing = 0.1
         , fillOpacity = 0.75
         , rangeBandCentreOffset = 0
@@ -204,6 +205,11 @@ nv.models.multiBar = function() {
                 .attr('height', 0)
                 .remove();
 
+<<<<<<< HEAD
+=======
+            groups.exit().selectAll('text').remove();
+
+>>>>>>> multiBarValues
             if (exitTransition.delay)
                 exitTransition.delay(function(d,i) {
                     var delay = i * (duration / (last_datalength + 1)) - i;
@@ -280,6 +286,70 @@ nv.models.multiBar = function() {
             bars
                 .attr('class', function(d,i) { return getY(d,i) < 0 ? 'nv-bar negative' : 'nv-bar positive'})
                 .attr('transform', function(d,i) { return 'translate(' + x(getX(d,i)) + ',0)'; })
+
+            if (showValues) {
+                var texts = groups.selectAll("text")
+                    .data(function(d) { return (hideable && !data.length) ? hideable.values : d.values });;
+
+                texts.exit().remove();
+
+                texts.enter().append('text')
+                    .attr('text-anchor', stacked ? 'middle' : 'bottom')
+                    .attr("stroke", "none")
+                    .attr("fill","black")
+                    .attr('x', function(d,i,j) {
+                        var width = x.rangeBand() / (stacked && !data[j].nonStackable ? 1 : data.length );
+                        return (stacked && !data[j].nonStackable ? 0 : (j * x.rangeBand() / data.length )) + width / 2.0;
+                    })
+                    .attr('y', function(d,i,j) {
+                        return 0;
+                    })
+                    .attr('transform', function(d,i) { return 'translate(' + x(getX(d,i)) + ',0)'; })
+                ;
+
+                var lastYs = {};
+
+                texts
+                    .text(function(d,i) {
+                        var y = getY(d,i);
+                        return y != 0 ? y : "";
+                    })
+                    .watchTransition(renderWatch, 'multibar: bars texts')
+                    .attr('x', function(d,i,j) {
+                        var width = x.rangeBand() / (stacked && !data[j].nonStackable ? 1 : data.length );
+                        return (stacked && !data[j].nonStackable ? 0 : (j * x.rangeBand() / data.length )) + width / 2.0;
+                    })
+                    .attr('y', function(d,i,j) {
+                        var posY;
+                        if(stacked && !data[j].nonStackable){
+                            var height = Math.max(Math.abs(y(d.y+d.y0) - y(d.y0)), 0);
+                            posY = y(d.y0) - (height / 2.0) + 4;
+
+                            var lastY = lastYs[d.x];
+
+                            if(d.y){
+                                if(!lastY && posY > y(d.y0) ){
+                                  posY = y(d.y0);
+                                } else if(lastY && posY + 8 > lastY){
+                                  posY = lastY - 8;
+                                }
+
+                              lastYs[d.x] = posY;
+                            }
+                            return posY;
+                        } else {
+                           posY = y(0);
+                        }
+                        return posY;
+                    })
+                    .attr('transform', function(d,i,j) {
+                        var width = x.rangeBand() / (stacked && !data[j].nonStackable ? 1 : data.length );
+                        return stacked ? 'translate(' + x(getX(d,i)) + ',' + (0) + ')' : 'translate(' + (x(getX(d,i)) + width / 2.0 + 4) + ',' + (y(yDomain[0]) - y(0)) + ') rotate(-90,'+j * x.rangeBand() / data.length+','+y(0)+')' ;
+                    })
+                ;
+            } else {
+                groups.selectAll('text').remove();
+            }
 
             if (barColor) {
                 if (!disabled) disabled = data.map(function() { return true });
@@ -410,6 +480,7 @@ nv.models.multiBar = function() {
         groupSpacing:{get: function(){return groupSpacing;}, set: function(_){groupSpacing=_;}},
         rangeBandCentreOffset: {get: function() {return rangeBandCentreOffset;}, set: function(_) {rangeBandCentreOffset = _;}},
         fillOpacity: {get: function(){return fillOpacity;}, set: function(_){fillOpacity=_;}},
+        showValues: {get: function(){return showValues;}, set: function(_){showValues=_;}},
 
         // options that require extra logic in the setter
         margin: {get: function(){return margin;}, set: function(_){
