@@ -1,4 +1,4 @@
-/* nvd3 version 1.8.5-dev (https://github.com/novus/nvd3) 2017-08-24 */
+/* nvd3 version 1.8.5-dev (https://github.com/novus/nvd3) 2017-08-28 */
 (function(){
 
 // set up main nv object
@@ -9796,15 +9796,17 @@ nv.models.multiChart = function() {
                 availableHeight = nv.utils.availableHeight(height, container, margin),
                 fullWidth = nv.utils.sanitizeWidth(width, container);
 
-
             var dataLines1 = data.filter(function(d) {return d.type == 'line' && d.yAxis == 1});
             var dataLines2 = data.filter(function(d) {return d.type == 'line' && d.yAxis == 2});
             var dataScatters1 = data.filter(function(d) {return d.type == 'scatter' && d.yAxis == 1});
             var dataScatters2 = data.filter(function(d) {return d.type == 'scatter' && d.yAxis == 2});
-            var dataBars1 =  data.filter(function(d) {return d.type == 'bar'  && d.yAxis == 1});
-            var dataBars2 =  data.filter(function(d) {return d.type == 'bar'  && d.yAxis == 2});
+            var dataBars1 = data.filter(function(d) {return d.type == 'bar'});
+            var dataBars2 = data.filter(function(d) {return d.type == 'bar'});
             var dataStack1 = data.filter(function(d) {return d.type == 'area' && d.yAxis == 1});
             var dataStack2 = data.filter(function(d) {return d.type == 'area' && d.yAxis == 2});
+
+            dataBars1 = dataBars1.map(function(d) {return d.yAxis == 1 ? d : {key: "multiAxisPlaceholder", values: d.values.map(function(v){return {x: v.x, y: 0};})}});
+            dataBars2 = dataBars2.map(function(d) {return d.yAxis == 2 ? d : {key: "multiAxisPlaceholder", values: d.values.map(function(v){return {x: v.x, y: 0};})}});
 
             // Display noData message if there's nothing to show.
             if (!data || !data.length || !data.filter(function(d) { return d.values.length }).length) {
@@ -10064,7 +10066,7 @@ nv.models.multiChart = function() {
                 tooltip
                     .duration(0)
                     .headerFormatter(function(d, i) {
-                    	return xAxis.tickFormat()(d, i);
+                        return xAxis.tickFormat()(d, i);
                     })
                     .valueFormatter(function(d, i) {
                         return yaxis.tickFormat()(d, i);
@@ -10084,7 +10086,7 @@ nv.models.multiChart = function() {
                 tooltip
                     .duration(100)
                     .headerFormatter(function(d, i) {
-                    	return xAxis.tickFormat()(d, i);
+                        return xAxis.tickFormat()(d, i);
                     })
                     .valueFormatter(function(d, i) {
                         return yaxis.tickFormat()(d, i);
@@ -10100,7 +10102,7 @@ nv.models.multiChart = function() {
                 tooltip
                     .duration(0)
                     .headerFormatter(function(d, i) {
-                    	return xAxis.tickFormat()(d, i);
+                        return xAxis.tickFormat()(d, i);
                     })
                     .valueFormatter(function(d, i) {
                         return yaxis.tickFormat()(d, i);
@@ -10121,7 +10123,7 @@ nv.models.multiChart = function() {
                 tooltip
                     .duration(0)
                     .headerFormatter(function(d, i) {
-                    	return xAxis.tickFormat()(d, i);
+                        return xAxis.tickFormat()(d, i);
                     })
                     .valueFormatter(function(d, i) {
                         return yaxis.tickFormat()(d, i);
