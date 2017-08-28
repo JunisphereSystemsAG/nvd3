@@ -205,11 +205,8 @@ nv.models.multiBar = function() {
                 .attr('height', 0)
                 .remove();
 
-<<<<<<< HEAD
-=======
             groups.exit().selectAll('text').remove();
 
->>>>>>> multiBarValues
             if (exitTransition.delay)
                 exitTransition.delay(function(d,i) {
                     var delay = i * (duration / (last_datalength + 1)) - i;
