@@ -1,4 +1,4 @@
-/* nvd3 version 1.8.5-dev (https://github.com/novus/nvd3) 2017-08-28 */
+/* nvd3 version 1.8.5-dev (https://github.com/novus/nvd3) 2017-09-05 */
 (function(){
 
 // set up main nv object
@@ -9807,8 +9807,25 @@ nv.models.multiChart = function() {
             var dataStack1 = data.filter(function(d) {return d.type == 'area' && d.yAxis == 1});
             var dataStack2 = data.filter(function(d) {return d.type == 'area' && d.yAxis == 2});
 
-            dataBars1 = dataBars1.map(function(d) {return d.yAxis == 1 ? d : {key: "multiAxisPlaceholder", disabled: d.disabled, values: d.values.map(function(v){return {x: v.x, y: 0};})}});
-            dataBars2 = dataBars2.map(function(d) {return d.yAxis == 2 ? d : {key: "multiAxisPlaceholder", disabled: d.disabled, values: d.values.map(function(v){return {x: v.x, y: 0};})}});
+            dataBars1 = dataBars1.map(function(d){
+                if(d.yAxis == 1){
+                  return d;
+                }
+
+                d = Object.assign({}, d);
+                d.values = d.values.map(function(d){return {x: d.x, y: 0};});
+                return d;
+            });
+
+            dataBars2 = dataBars2.map(function(d){
+                if(d.yAxis == 2){
+                  return d;
+                }
+
+                d = Object.assign({}, d);
+                d.values = d.values.map(function(d){return {x: d.x, y: 0};});
+                return d;
+            });
 
             // Display noData message if there's nothing to show.
             if (!data || !data.length || !data.filter(function(d) { return d.values.length }).length) {
@@ -9908,11 +9925,11 @@ nv.models.multiChart = function() {
             bars1
                 .width(availableWidth)
                 .height(availableHeight)
-                .color(color_array.filter(function(d,i) { return !data[i].disabled && data[i].yAxis == 1 && data[i].type == 'bar'}));
+                .color(color_array.filter(function(d,i) { return !data[i].disabled && data[i].type == 'bar'}));
             bars2
                 .width(availableWidth)
                 .height(availableHeight)
-                .color(color_array.filter(function(d,i) { return !data[i].disabled && data[i].yAxis == 2 && data[i].type == 'bar'}));
+                .color(color_array.filter(function(d,i) { return !data[i].disabled && data[i].type == 'bar'}));
             stack1
                 .width(availableWidth)
                 .height(availableHeight)
