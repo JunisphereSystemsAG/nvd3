@@ -252,15 +252,21 @@ nv.models.multiChart = function() {
 
             if (dataLines1.length) {
                 if(rbcOffset > 0){
-                  lines1.padData(true);
-                  lines1.padDataOuter(groupSpacing);
+                    lines1.padData(true);
+                    lines1.padDataOuter(groupSpacing);
+                } else{
+                    lines1.padData(false);
+                    lines1.padDataOuter(0);
                 }
                 d3.transition(lines1Wrap).call(lines1);
             }
             if (dataLines2.length) {
                 if(rbcOffset > 0){
-                  lines2.padData(true);
-                  lines2.padDataOuter(groupSpacing);
+                    lines2.padData(true);
+                    lines2.padDataOuter(groupSpacing);
+                } else {
+                    lines2.padData(false);
+                    lines2.padDataOuter(0);
                 }
                 d3.transition(lines2Wrap).call(lines2);
             }
@@ -273,10 +279,14 @@ nv.models.multiChart = function() {
                 ._ticks( nv.utils.calcTicksX(availableWidth/100, data) )
                 .tickSize(-availableHeight, 0);
 
+            var xAxisScale = ((availableWidth - rbcOffset*2)/availableWidth);
+
+            xAxis.fontSize(12 / xAxisScale);
+
             g.select('.nv-x.nv-axis')
                 .attr('transform',
-                       'translate(' + rbcOffset + ', ' + availableHeight + ') ' +
-                       'scale(' + ((availableWidth - rbcOffset*2)/availableWidth) + ', 1)'
+                       'translate(' + rbcOffset + ', ' + (availableHeight + 3 / xAxisScale) + ') ' +
+                       'scale(' + xAxisScale + ', ' + xAxisScale + ')'
                 )
 
             d3.transition(g.select('.nv-x.nv-axis'))
