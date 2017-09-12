@@ -258,12 +258,12 @@ nv.models.multiChart = function() {
             if(dataStack1.length){d3.transition(stack1Wrap).call(stack1);}
             if(dataStack2.length){d3.transition(stack2Wrap).call(stack2);}
 
-            if (dataBars1.length) {
+            if (dataBars1.some(function(d){return !d.disabled})) {
                 d3.transition(bars1Wrap).call(bars1);
                 rbcOffset = bars1.rangeBandCentreOffset();
                 groupSpacing = bars1.groupSpacing();
             }
-            if (dataBars2.length) {
+            if (dataBars2.some(function(d){return !d.disabled})) {
                 d3.transition(bars2Wrap).call(bars2);
                 rbcOffset = bars2.rangeBandCentreOffset();
                 groupSpacing = bars2.groupSpacing();
