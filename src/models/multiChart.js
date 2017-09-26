@@ -304,7 +304,7 @@ nv.models.multiChart = function() {
 
             var xAxisScale = ((availableWidth - rbcOffset*2)/availableWidth);
 
-            xAxis.fontSize(12 / xAxisScale);
+            xAxis.fontSize((12 / xAxisScale) + "px");
 
             g.select('.nv-x.nv-axis')
                 .attr('transform',
