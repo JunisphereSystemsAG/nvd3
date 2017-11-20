@@ -453,7 +453,7 @@ nv.models.multiChart = function() {
                         if(rbcOffset > 0) {
                             ordinalWidth = availableWidth - rbcOffset * 2
                             ordinalX = e.mouseX - rbcOffset;
-                            value = ordinalX / ordinalWidth * extent[1];
+                            value = extent[0] + ordinalX / ordinalWidth * (extent[1] - extent[0]);
                         } else {
                             value = e.pointXValue;
                         }
