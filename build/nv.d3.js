@@ -1,4 +1,4 @@
-/* nvd3 version 1.8.5-dev (https://github.com/novus/nvd3) 2017-09-26 */
+/* nvd3 version 1.8.5-dev (https://github.com/novus/nvd3) 2017-11-20 */
 (function(){
 
 // set up main nv object
@@ -10203,7 +10203,7 @@ nv.models.multiChart = function() {
                         if(rbcOffset > 0) {
                             ordinalWidth = availableWidth - rbcOffset * 2
                             ordinalX = e.mouseX - rbcOffset;
-                            value = ordinalX / ordinalWidth * extent[1];
+                            value = extent[0] + ordinalX / ordinalWidth * (extent[1] - extent[0]);
                         } else {
                             value = e.pointXValue;
                         }
