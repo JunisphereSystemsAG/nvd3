@@ -1,4 +1,4 @@
-/* nvd3 version 1.8.5-dev (https://github.com/novus/nvd3) 2017-11-20 */
+/* nvd3 version 1.8.5-dev (https://github.com/novus/nvd3) 2018-02-06 */
 (function(){
 
 // set up main nv object
@@ -6518,8 +6518,21 @@ nv.models.line = function() {
         , strokeWidth = 1.5
         , color = nv.utils.defaultColor() // a function that returns a color
         , getX = function(d) { return d.x } // accessor to get the x value from a data point
-        , getY = function(d) { return d.y } // accessor to get the y value from a data point
-        , defined = function(d,i) { return !isNaN(getY(d,i)) && getY(d,i) !== null } // allows a line to be not continuous when it is not defined
+        , getY = function(d) {
+            if(nv.utils.isNumber(d.y)){
+              return d.y;
+            }else if (nv.utils.isNumber(d.y0)){
+              return y.domain()[1];
+            }
+        } // accessor to get the y value from a data point
+        , getY0 = function(d) {
+            if(nv.utils.isNumber(d.y0)){
+              return d.y0;
+            }else if(nv.utils.isNumber(d.y)){
+              return 0;
+            }
+        }
+        , defined = function(d,i) { return (!isNaN(getY(d,i)) && getY(d,i) !== null) || (!isNaN(getY0(d,i)) && getY0(d,i) !== null) } // allows a line to be not continuous when it is not defined
         , isArea = function(d) { return d.area } // decides if a line is an area or just a line
         , clipEdge = false // if true, masks lines within x and y scale
         , x //can be accessed via chart.xScale()
@@ -6625,7 +6638,8 @@ nv.models.line = function() {
                         .defined(defined)
                         .x(function(d,i) { return nv.utils.NaNtoZero(x0(getX(d,i))) })
                         .y0(function(d,i) { return nv.utils.NaNtoZero(y0(getY(d,i))) })
-                        .y1(function(d,i) { return y0( y.domain()[0] <= 0 ? y.domain()[1] >= 0 ? 0 : y.domain()[1] : y.domain()[0] ) })
+                        .y1(function(d,i) { return nv.utils.NaNtoZero(y0(getY0(d,i))) })
+                        //.y1(function(d,i) { return y0( y.domain()[0] <= 0 ? y.domain()[1] >= 0 ? 0 : y.domain()[1] : y.domain()[0] ) })
                         //.y1(function(d,i) { return y0(0) }) //assuming 0 is within y domain.. may need to tweak this
                         .apply(this, [d.values])
                 });
@@ -6639,7 +6653,8 @@ nv.models.line = function() {
                         .defined(defined)
                         .x(function(d,i) { return nv.utils.NaNtoZero(x(getX(d,i))) })
                         .y0(function(d,i) { return nv.utils.NaNtoZero(y(getY(d,i))) })
-                        .y1(function(d,i) { return y( y.domain()[0] <= 0 ? y.domain()[1] >= 0 ? 0 : y.domain()[1] : y.domain()[0] ) })
+                        .y1(function(d,i) { return nv.utils.NaNtoZero(y(getY0(d,i))) })
+                        //.y1(function(d,i) { return y( y.domain()[0] <= 0 ? y.domain()[1] >= 0 ? 0 : y.domain()[1] : y.domain()[0] ) })
                         //.y1(function(d,i) { return y0(0) }) //assuming 0 is within y domain.. may need to tweak this
                         .apply(this, [d.values])
                 });
@@ -9781,6 +9796,10 @@ nv.models.multiChart = function() {
 
         legend = nv.models.legend().height(30),
         tooltip = nv.models.tooltip(),
+
+        bounds1 = nv.models.line().yScale(yScale1).duration(duration),
+        bounds2 = nv.models.line().yScale(yScale2).duration(duration),
+
         dispatch = d3.dispatch("stateChange");
 
     var charts = [lines1, lines2, scatters1, scatters2, bars1, bars2, stack1, stack2];
@@ -9806,6 +9825,25 @@ nv.models.multiChart = function() {
             var dataBars2 = data.filter(function(d) {return d.type == 'bar'});
             var dataStack1 = data.filter(function(d) {return d.type == 'area' && d.yAxis == 1});
             var dataStack2 = data.filter(function(d) {return d.type == 'area' && d.yAxis == 2});
+
+            var dataBounds1 = [];
+            var chartData1 = [dataLines1, dataScatters1, dataBars1, dataStack1];
+
+            for(var j=0,jl=chartData1.length;j<jl;j++){
+                for (var i=0,il=chartData1[j].length;i<il;i++){
+                    dataBounds1 = dataBounds1.concat(chartData1[j][i].bounds);
+                }
+            }
+
+
+            var dataBounds2 = [];
+            var chartData2 = [dataLines2, dataScatters2, dataBars2, dataStack2];
+
+            for(var j=0,jl=chartData2.length;j<jl;j++){
+                for (var i=0,il=chartData2[j].length;i<il;i++){
+                    dataBounds2 = dataBounds2.concat(chartData2[j][i].bounds);
+                }
+            }
 
             dataBars1 = dataBars1.map(function(d){
                 if(d.yAxis == 1){
@@ -9855,6 +9893,8 @@ nv.models.multiChart = function() {
             var wrap = container.selectAll('g.wrap.multiChart').data([data]);
             var gEnter = wrap.enter().append('g').attr('class', 'wrap nvd3 multiChart').append('g');
 
+            gEnter.append('g').attr('class', 'bounds1Wrap');
+            gEnter.append('g').attr('class', 'bounds2Wrap');
             gEnter.append('g').attr('class', 'nv-x nv-axis');
             gEnter.append('g').attr('class', 'nv-y1 nv-axis');
             gEnter.append('g').attr('class', 'nv-y2 nv-axis');
@@ -9904,6 +9944,14 @@ nv.models.multiChart = function() {
                     .attr('transform', 'translate(' + legendXPosition + ',' + (-margin.top) +')');
             }
 
+            bounds1
+                .width(availableWidth)
+                .height(availableHeight)
+                .interpolate(interpolate);
+            bounds2
+                .width(availableWidth)
+                .height(availableHeight)
+                .interpolate(interpolate);
             lines1
                 .width(availableWidth)
                 .height(availableHeight)
@@ -9943,6 +9991,10 @@ nv.models.multiChart = function() {
 
             g.attr('transform', 'translate(' + margin.left + ',' + margin.top + ')');
 
+            var bounds1Wrap = g.select('.bounds1Wrap')
+                .datum(dataBounds1);
+            var bounds2Wrap = g.select('.bounds2Wrap')
+                .datum(dataBounds2);
             var lines1Wrap = g.select('.lines1Wrap')
                 .datum(dataLines1.filter(function(d){return !d.disabled}));
             var scatters1Wrap = g.select('.scatters1Wrap')
@@ -9972,6 +10024,9 @@ nv.models.multiChart = function() {
 
             yScale2 .domain(yDomain2 || d3.extent(d3.merge(series2).concat(extraValue2), function(d) { return d.y } ))
                 .range([0, availableHeight]);
+
+            bounds1.yDomain(yScale1.domain());
+            bounds2.yDomain(yScale2.domain());
 
             lines1.yDomain(yScale1.domain());
             scatters1.yDomain(yScale1.domain());
@@ -10023,6 +10078,28 @@ nv.models.multiChart = function() {
                     lines2.padDataOuter(0);
                 }
                 d3.transition(lines2Wrap).call(lines2);
+            }
+
+            if (dataBounds1.length) {
+                if(rbcOffset > 0){
+                    bounds1.padData(true);
+                    bounds1.padDataOuter(groupSpacing);
+                } else{
+                    bounds1.padData(false);
+                    bounds1.padDataOuter(0);
+                }
+                d3.transition(bounds1Wrap).call(bounds1);
+            }
+
+            if (dataBounds2.length) {
+                if(rbcOffset > 0){
+                    bounds2.padData(true);
+                    bounds2.padDataOuter(groupSpacing);
+                } else{
+                    bounds2.padData(false);
+                    bounds2.padDataOuter(0);
+                }
+                d3.transition(bounds2Wrap).call(bounds2);
             }
 
             if(dataScatters1.length){d3.transition(scatters1Wrap).call(scatters1);}
@@ -10313,6 +10390,8 @@ nv.models.multiChart = function() {
 
     chart.dispatch = dispatch;
     chart.legend = legend;
+    chart.bounds1 = bounds1;
+    chart.bounds2 = bounds2;
     chart.lines1 = lines1;
     chart.lines2 = lines2;
     chart.scatters1 = scatters1;
@@ -10355,6 +10434,8 @@ nv.models.multiChart = function() {
         }},
         x: {get: function(){return getX;}, set: function(_){
             getX = _;
+            bounds1.x(_);
+            bounds2.x(_);
             lines1.x(_);
             lines2.x(_);
             scatters1.x(_);
@@ -10366,6 +10447,8 @@ nv.models.multiChart = function() {
         }},
         y: {get: function(){return getY;}, set: function(_){
             getY = _;
+            bounds1.y(_);
+            bounds2.y(_);
             lines1.y(_);
             lines2.y(_);
             scatters1.y(_);
@@ -10377,6 +10460,8 @@ nv.models.multiChart = function() {
         }},
         useVoronoi: {get: function(){return useVoronoi;}, set: function(_){
             useVoronoi=_;
+            bounds1.useVoronoi(_);
+            bounds2.useVoronoi(_);
             lines1.useVoronoi(_);
             lines2.useVoronoi(_);
             stack1.useVoronoi(_);
@@ -10386,6 +10471,8 @@ nv.models.multiChart = function() {
         useInteractiveGuideline: {get: function(){return useInteractiveGuideline;}, set: function(_){
             useInteractiveGuideline = _;
             if (useInteractiveGuideline) {
+                bounds1.interactive(false);
+                bounds2.useVoronoi(false);
                 lines1.interactive(false);
                 lines1.useVoronoi(false);
                 lines2.interactive(false);
@@ -10401,7 +10488,7 @@ nv.models.multiChart = function() {
 
         duration: {get: function(){return duration;}, set: function(_) {
             duration = _;
-            [lines1, lines2, stack1, stack2, scatters1, scatters2, xAxis, yAxis1, yAxis2].forEach(function(model){
+            [bounds1, bounds2, lines1, lines2, stack1, stack2, scatters1, scatters2, xAxis, yAxis1, yAxis2].forEach(function(model){
               model.duration(duration);
             });
         }}
@@ -14202,13 +14289,13 @@ nv.models.stackedArea = function() {
             gEnter.append('g').attr('class', 'nv-scatterWrap');
 
             wrap.attr('transform', 'translate(' + margin.left + ',' + margin.top + ')');
-            
+
             // If the user has not specified forceY, make sure 0 is included in the domain
             // Otherwise, use user-specified values for forceY
             if (scatter.forceY().length == 0) {
                 scatter.forceY().push(0);
             }
-            
+
             scatter
                 .width(availableWidth)
                 .height(availableHeight)
