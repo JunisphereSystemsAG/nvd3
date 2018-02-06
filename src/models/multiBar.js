@@ -52,6 +52,31 @@ nv.models.multiBar = function() {
             var availableWidth = width - margin.left - margin.right,
                 availableHeight = height - margin.top - margin.bottom;
 
+            var seriesCounts = {};
+            var maxSeriesCount = 0
+
+            if(!stacked){
+                data = data.filter(function(s){
+                  s.values = s.values.filter(function(v){
+                    return nv.utils.isNumber(v.y);
+                  });
+                  return s.values.length > 0;
+                });
+
+                data.forEach(function(s){
+                  s.values.forEach(function(v){
+                    var count = seriesCounts[v.x] || 0;
+                    v.index = count;
+                    seriesCounts[v.x] = count + 1;
+                    maxSeriesCount = Math.max(maxSeriesCount, count + 1);
+                  });
+                });
+            }
+
+            var calculateSerieX = function(d){
+              return (d.index * (x.rangeBand() / maxSeriesCount)) + ((maxSeriesCount - seriesCounts[d.x]) / 2 * (x.rangeBand() / maxSeriesCount));
+            };
+
             container = d3.select(this);
             nv.utils.initSVG(container);
             var nonStackableCount = 0;
@@ -229,11 +254,11 @@ nv.models.multiBar = function() {
             var barsEnter = bars.enter().append('rect')
                     .attr('class', function(d,i) { return getY(d,i) < 0 ? 'nv-bar negative' : 'nv-bar positive'})
                     .attr('x', function(d,i,j) {
-                        return stacked && !data[j].nonStackable ? 0 : (j * x.rangeBand() / data.length )
+                        return stacked && !data[j].nonStackable ? 0 : calculateSerieX(d);
                     })
                     .attr('y', function(d,i,j) { return y0(stacked && !data[j].nonStackable ? d.y0 : 0) || 0 })
                     .attr('height', 0)
-                    .attr('width', function(d,i,j) { return x.rangeBand() / (stacked && !data[j].nonStackable ? 1 : data.length) })
+                    .attr('width', function(d,i,j) { return x.rangeBand() / (stacked && !data[j].nonStackable ? 1 : maxSeriesCount) })
                     .attr('transform', function(d,i) { return 'translate(' + x(getX(d,i)) + ',0)'; })
                 ;
             bars
@@ -287,7 +312,7 @@ nv.models.multiBar = function() {
 
             if (showValues) {
                 var texts = groups.selectAll("text")
-                    .data(function(d) { return (hideable && !data.length) ? hideable.values : d.values });;
+                    .data(function(d) { return (hideable && !maxSeriesCount) ? hideable.values : d.values });;
 
                 texts.exit().remove();
 
@@ -296,8 +321,8 @@ nv.models.multiBar = function() {
                     .attr("stroke", "none")
                     .attr("fill","black")
                     .attr('x', function(d,i,j) {
-                        var width = x.rangeBand() / (stacked && !data[j].nonStackable ? 1 : data.length );
-                        return (stacked && !data[j].nonStackable ? 0 : (j * x.rangeBand() / data.length )) + width / 2.0;
+                        var width = x.rangeBand() / (stacked && !data[j].nonStackable ? 1 : maxSeriesCount );
+                        return (stacked && !data[j].nonStackable ? 0 : calculateSerieX(d)) + width / 2.0;
                     })
                     .attr('y', function(d,i,j) {
                         return 0;
@@ -314,8 +339,8 @@ nv.models.multiBar = function() {
                     })
                     .watchTransition(renderWatch, 'multibar: bars texts')
                     .attr('x', function(d,i,j) {
-                        var width = x.rangeBand() / (stacked && !data[j].nonStackable ? 1 : data.length );
-                        return (stacked && !data[j].nonStackable ? 0 : (j * x.rangeBand() / data.length )) + width / 2.0;
+                        var width = x.rangeBand() / (stacked && !data[j].nonStackable ? 1 : maxSeriesCount );
+                        return (stacked && !data[j].nonStackable ? 0 : calculateSerieX(d)) + width / 2.0;
                     })
                     .attr('y', function(d,i,j) {
                         var posY;
@@ -341,8 +366,8 @@ nv.models.multiBar = function() {
                         return posY;
                     })
                     .attr('transform', function(d,i,j) {
-                        var width = x.rangeBand() / (stacked && !data[j].nonStackable ? 1 : data.length );
-                        return stacked ? 'translate(' + x(getX(d,i)) + ',' + (0) + ')' : 'translate(' + (x(getX(d,i)) + width / 2.0 + 4) + ',' + (y(yDomain[0]) - y(0) - (data[j].valueLabelOffset || 0)) + ') rotate(-90,'+j * x.rangeBand() / data.length+','+y(0)+')' ;
+                        var width = x.rangeBand() / (stacked && !data[j].nonStackable ? 1 : maxSeriesCount );
+                        return stacked ? 'translate(' + x(getX(d,i)) + ',' + (0) + ')' : 'translate(' + (x(getX(d,i)) + width / 2.0 + 4) + ',' + (y(yDomain[0]) - y(0) - (data[j].valueLabelOffset || 0)) + ') rotate(-90,'+ calculateSerieX(d) +','+y(0)+')' ;
                     })
                 ;
             } else {
@@ -416,10 +441,8 @@ nv.models.multiBar = function() {
             }
             else {
                 barSelection
-                    .attr('x', function(d,i) {
-                        return d.series * x.rangeBand() / data.length;
-                    })
-                    .attr('width', x.rangeBand() / data.length)
+                    .attr('x', calculateSerieX)
+                    .attr('width', x.rangeBand() / maxSeriesCount)
                     .attr('y', function(d,i) {
                         return getY(d,i) < 0 ?
                             y(0) :
