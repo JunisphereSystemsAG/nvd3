@@ -1,4 +1,4 @@
-/* nvd3 version 1.8.5-dev (https://github.com/novus/nvd3) 2018-02-06 */
+/* nvd3 version 1.8.5-dev (https://github.com/novus/nvd3) 2018-02-07 */
 (function(){
 
 // set up main nv object
@@ -8027,26 +8027,23 @@ nv.models.multiBar = function() {
             var seriesCounts = {};
             var maxSeriesCount = 0
 
-            if(!stacked){
-                data = data.filter(function(s){
-                  s.values = s.values.filter(function(v){
-                    return nv.utils.isNumber(v.y);
-                  });
-                  return s.values.length > 0;
-                });
-
-                data.forEach(function(s){
-                  s.values.forEach(function(v){
-                    var count = seriesCounts[v.x] || 0;
-                    v.index = count;
-                    seriesCounts[v.x] = count + 1;
-                    maxSeriesCount = Math.max(maxSeriesCount, count + 1);
-                  });
-                });
-            }
+            data.forEach(function(s){
+              s.values.filter(function(v){return nv.utils.isNumber(v.y);}).forEach(function(v){
+                var count = seriesCounts[v.x] || 0;
+                v.index = count;
+                seriesCounts[v.x] = count + 1;
+                maxSeriesCount = Math.max(maxSeriesCount, count + 1);
+              });
+            });
 
             var calculateSerieX = function(d){
               return (d.index * (x.rangeBand() / maxSeriesCount)) + ((maxSeriesCount - seriesCounts[d.x]) / 2 * (x.rangeBand() / maxSeriesCount));
+            };
+
+            var filterValid = function(d){
+                return d.filter(function(d){
+                  return nv.utils.isNumber(d.y);
+                });
             };
 
             container = d3.select(this);
@@ -8220,7 +8217,7 @@ nv.models.multiBar = function() {
                 .style('fill-opacity', fillOpacity);
 
             var bars = groups.selectAll('rect.nv-bar')
-                .data(function(d) { return (hideable && !data.length) ? hideable.values : d.values });
+                .data(function(d) { return (hideable && !data.length) ? filterValid(hideable.values) : filterValid(d.values) });
             bars.exit().remove();
 
             var barsEnter = bars.enter().append('rect')
@@ -8284,7 +8281,7 @@ nv.models.multiBar = function() {
 
             if (showValues) {
                 var texts = groups.selectAll("text")
-                    .data(function(d) { return (hideable && !maxSeriesCount) ? hideable.values : d.values });;
+                    .data(function(d) { return (hideable && !maxSeriesCount) ? filterValid(hideable.values) : filterValid(d.values) });;
 
                 texts.exit().remove();
 
