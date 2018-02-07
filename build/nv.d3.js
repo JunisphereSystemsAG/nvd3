@@ -9851,7 +9851,9 @@ nv.models.multiChart = function() {
 
             for(var j=0,jl=chartData1.length;j<jl;j++){
                 for (var i=0,il=chartData1[j].length;i<il;i++){
-                    dataBounds1 = dataBounds1.concat(chartData1[j][i].bounds);
+                    if(chartData1[j][i].bounds){
+                        dataBounds1 = dataBounds1.concat(chartData1[j][i].bounds);
+                    }
                 }
             }
 
@@ -9861,7 +9863,9 @@ nv.models.multiChart = function() {
 
             for(var j=0,jl=chartData2.length;j<jl;j++){
                 for (var i=0,il=chartData2[j].length;i<il;i++){
-                    dataBounds2 = dataBounds2.concat(chartData2[j][i].bounds);
+                    if(chartData2[j][i].bounds){
+                      dataBounds2 = dataBounds2.concat(chartData2[j][i].bounds);
+                    }
                 }
             }
 
