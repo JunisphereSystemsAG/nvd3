@@ -11812,8 +11812,11 @@ nv.models.pie = function() {
                 var createHashKey = function(coordinates) {
                     return Math.floor(coordinates[0]/avgWidth) * avgWidth + ',' + Math.floor(coordinates[1]/avgHeight) * avgHeight;
                 };
+
+                var total = (data[0] || []).reduce(function(m, d) { return m + d.value; }, 0);;
+
                 var getSlicePercentage = function(d) {
-                    return (d.endAngle - d.startAngle) / (2 * Math.PI);
+                    return d.value / total;
                 };
 
                 pieLabels.watchTransition(renderWatch, 'pie labels').attr('transform', function (d, i) {
@@ -12131,9 +12134,11 @@ nv.models.pieChart = function() {
             }
             wrap.attr('transform', 'translate(' + margin.left + ',' + margin.top + ')');
 
+            var labelsMargin = pie.labelsOutside() ? 30 : 0;
+
             // Main Chart Component(s)
-            pie.width(availableWidth).height(availableHeight);
-            var pieWrap = g.select('.nv-pieWrap').datum([data]);
+            pie.width(availableWidth - labelsMargin * 2).height(availableHeight - labelsMargin * 2);
+            var pieWrap = g.select('.nv-pieWrap').attr('transform', 'translate(' + labelsMargin + ',' + labelsMargin + ')').datum([data]);
             d3.transition(pieWrap).call(pie);
 
             //============================================================

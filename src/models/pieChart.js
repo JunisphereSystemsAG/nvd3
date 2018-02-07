@@ -153,9 +153,11 @@ nv.models.pieChart = function() {
             }
             wrap.attr('transform', 'translate(' + margin.left + ',' + margin.top + ')');
 
+            var labelsMargin = pie.labelsOutside() ? 30 : 0;
+
             // Main Chart Component(s)
-            pie.width(availableWidth).height(availableHeight);
-            var pieWrap = g.select('.nv-pieWrap').datum([data]);
+            pie.width(availableWidth - labelsMargin * 2).height(availableHeight - labelsMargin * 2);
+            var pieWrap = g.select('.nv-pieWrap').attr('transform', 'translate(' + labelsMargin + ',' + labelsMargin + ')').datum([data]);
             d3.transition(pieWrap).call(pie);
 
             //============================================================

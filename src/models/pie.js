@@ -270,8 +270,11 @@ nv.models.pie = function() {
                 var createHashKey = function(coordinates) {
                     return Math.floor(coordinates[0]/avgWidth) * avgWidth + ',' + Math.floor(coordinates[1]/avgHeight) * avgHeight;
                 };
+
+                var total = (data[0] || []).reduce(function(m, d) { return m + d.value; }, 0);;
+
                 var getSlicePercentage = function(d) {
-                    return (d.endAngle - d.startAngle) / (2 * Math.PI);
+                    return d.value / total;
                 };
 
                 pieLabels.watchTransition(renderWatch, 'pie labels').attr('transform', function (d, i) {
