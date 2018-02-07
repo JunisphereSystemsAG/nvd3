@@ -11819,8 +11819,11 @@ nv.models.pie = function() {
 
                 var total = (data[0] || []).reduce(function(m, d) { return m + d.value; }, 0);;
 
-                var getSlicePercentage = function(d) {
-                    return d.value / total;
+                var getSlicePercentage = function(d, absolute) {
+                    if (absolute) {
+                        return d.value / total;
+                    }
+                    return (d.endAngle - d.startAngle) / (2 * Math.PI);
                 };
 
                 pieLabels.watchTransition(renderWatch, 'pie labels').attr('transform', function (d, i) {
@@ -11862,9 +11865,9 @@ nv.models.pie = function() {
                         return labelSunbeamLayout ? ((d.startAngle + d.endAngle) / 2 < Math.PI ? 'start' : 'end') : 'middle';
                     })
                     .text(function(d, i) {
-                        var percent = getSlicePercentage(d);
+                        var percent = getSlicePercentage(d, true);
                         var label = '';
-                        if (!d.value || percent < labelThreshold) return '';
+                        if (!d.value || getSlicePercentage(d) < labelThreshold) return '';
 
                         if(typeof labelType === 'function') {
                             label = labelType(d, i, {
