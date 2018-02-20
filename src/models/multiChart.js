@@ -17,6 +17,7 @@ nv.models.multiChart = function() {
         getX = function(d) { return d.x },
         getY = function(d) { return d.y},
         interpolate = 'linear',
+        interpolateBounds = 'linear',
         useVoronoi = true,
         interactiveLayer = nv.interactiveGuideline(),
         useInteractiveGuideline = false,
@@ -205,11 +206,11 @@ nv.models.multiChart = function() {
             bounds1
                 .width(availableWidth)
                 .height(availableHeight)
-                .interpolate(interpolate);
+                .interpolate(interpolateBounds);
             bounds2
                 .width(availableWidth)
                 .height(availableHeight)
-                .interpolate(interpolate);
+                .interpolate(interpolateBounds);
             lines1
                 .width(availableWidth)
                 .height(availableHeight)
@@ -675,6 +676,7 @@ nv.models.multiChart = function() {
         yDomain2:    {get: function(){return yDomain2;}, set: function(_){yDomain2=_;}},
         noData:    {get: function(){return noData;}, set: function(_){noData=_;}},
         interpolate:    {get: function(){return interpolate;}, set: function(_){interpolate=_;}},
+        interpolateBounds:    {get: function(){return interpolateBounds;}, set: function(_){interpolateBounds=_;}},
         legendRightAxisHint:    {get: function(){return legendRightAxisHint;}, set: function(_){legendRightAxisHint=_;}},
 
         // options that require extra logic in the setter
