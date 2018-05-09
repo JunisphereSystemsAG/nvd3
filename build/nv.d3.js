@@ -1,4 +1,4 @@
-/* nvd3 version 1.8.5-dev (https://github.com/novus/nvd3) 2018-02-20 */
+/* nvd3 version 1.8.5-dev (https://github.com/novus/nvd3) 2018-05-09 */
 (function(){
 
 // set up main nv object
@@ -10135,7 +10135,7 @@ nv.models.multiChart = function() {
                 ._ticks( nv.utils.calcTicksX(availableWidth/100, data) )
                 .tickSize(-availableHeight, 0);
 
-            var xAxisScale = ((availableWidth - rbcOffset*2)/availableWidth);
+            var xAxisScale = ((availableWidth - rbcOffset*2)/availableWidth) || 1;
 
             xAxis.fontSize((12 / xAxisScale) + "px");
 
