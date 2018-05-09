@@ -369,7 +369,7 @@ nv.models.multiChart = function() {
                 ._ticks( nv.utils.calcTicksX(availableWidth/100, data) )
                 .tickSize(-availableHeight, 0);
 
-            var xAxisScale = ((availableWidth - rbcOffset*2)/availableWidth);
+            var xAxisScale = ((availableWidth - rbcOffset*2)/availableWidth) || 1;
 
             xAxis.fontSize((12 / xAxisScale) + "px");
 
