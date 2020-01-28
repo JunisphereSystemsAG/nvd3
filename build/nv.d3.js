@@ -1,4 +1,4 @@
-/* nvd3 version 1.8.5-dev (https://github.com/novus/nvd3) 2018-05-09 */
+/* nvd3 version 1.8.5-dev (https://github.com/novus/nvd3) 2020-01-28 */
 (function(){
 
 // set up main nv object
@@ -9858,7 +9858,6 @@ nv.models.multiChart = function() {
                 }
             }
 
-
             var dataBounds2 = [];
             var chartData2 = [dataLines2, dataScatters2, dataBars2, dataStack2];
 
@@ -10113,8 +10112,8 @@ nv.models.multiChart = function() {
                     bounds1.padData(false);
                     bounds1.padDataOuter(0);
                 }
-                d3.transition(bounds1Wrap).call(bounds1);
             }
+            d3.transition(bounds1Wrap).call(bounds1);
 
             if (dataBounds2.length) {
                 if(rbcOffset > 0){
@@ -10124,8 +10123,8 @@ nv.models.multiChart = function() {
                     bounds2.padData(false);
                     bounds2.padDataOuter(0);
                 }
-                d3.transition(bounds2Wrap).call(bounds2);
             }
+            d3.transition(bounds2Wrap).call(bounds2);
 
             if(dataScatters1.length){d3.transition(scatters1Wrap).call(scatters1);}
             if(dataScatters2.length){d3.transition(scatters2Wrap).call(scatters2);}
