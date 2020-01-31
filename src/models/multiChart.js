@@ -524,12 +524,14 @@ nv.models.multiChart = function() {
                 interactiveLayer.dispatch.on('elementMousemove', function(e) {
                     clearHighlights();
                     var singlePoint, pointIndex, pointXLocation, ordinalX, ordinalWidth, value, allData = [];
-                    data
-                    .filter(function(series, i) {
+                    var filteredData = data.filter(function(series, i) {
                         series.seriesIndex = i;
                         return !series.disabled;
-                    })
-                    .forEach(function(series,i) {
+                    });
+
+                    var nearestX = 0;
+
+                    filteredData.forEach(function(series, i){
                         var extent = x.domain();
                         var currentValues = series.values.filter(function(d,i) {
                             return chart.x()(d,i) >= extent[0] && chart.x()(d,i) <= extent[1];
@@ -543,32 +545,52 @@ nv.models.multiChart = function() {
                             value = e.pointXValue;
                         }
 
-                        pointIndex = nv.interactiveBisect(currentValues, value, chart.x());
+                        var pi = nv.interactiveBisect(currentValues, value, chart.x());
+                        var point = currentValues[pi];
+                        var diff = Math.abs(value - point.x);
 
-                        var point = currentValues[pointIndex];
-                        var pointYValue = chart.y()(point, pointIndex);
-                        if (pointYValue !== null) {
-                            highlightPoint(i, pointIndex, true);
+                        if (diff < Math.abs(value - nearestX)){
+                          nearestX = point.x;
                         }
-                        if (point === undefined) return;
-                        if (singlePoint === undefined) singlePoint = point;
+                    });
 
-                        if (pointXLocation === undefined){
-                            if(rbcOffset > 0) {
-                                ordinalX = point.x / extent[1] * ordinalWidth;
-                                pointXLocation = ordinalX + rbcOffset;
-                            } else {
-                                pointXLocation = x(chart.x()(point,pointIndex));
-                            }
-                        }
-
-                        allData.push({
-                            key: series.key,
-                            value: pointYValue,
-                            color: color(series,series.seriesIndex),
-                            data: point,
-                            yAxis: series.yAxis == 2 ? yAxis2 : yAxis1
+                    filteredData.forEach(function(series,i) {
+                        var extent = x.domain();
+                        var currentValues = series.values.filter(function(d,i) {
+                            return chart.x()(d,i) >= extent[0] && chart.x()(d,i) <= extent[1];
                         });
+
+                        var currentXValues = currentValues.map(function(v){ return v.x;});
+
+                        pointIndex = nv.nearestValueIndex(currentXValues, nearestX, 0);
+
+                        if(nv.utils.isNumber(pointIndex)) {
+                            var point = currentValues[pointIndex];
+
+                            var pointYValue = chart.y()(point, pointIndex);
+                            if (pointYValue !== null) {
+                                highlightPoint(i, pointIndex, true);
+                            }
+                            if (point === undefined) return;
+                            if (singlePoint === undefined) singlePoint = point;
+
+                            if (pointXLocation === undefined){
+                                if(rbcOffset > 0) {
+                                    ordinalX = point.x / extent[1] * ordinalWidth;
+                                    pointXLocation = ordinalX + rbcOffset;
+                                } else {
+                                    pointXLocation = x(chart.x()(point,pointIndex));
+                                }
+                            }
+
+                            allData.push({
+                                key: series.key,
+                                value: pointYValue,
+                                color: color(series,series.seriesIndex),
+                                data: point,
+                                yAxis: series.yAxis == 2 ? yAxis2 : yAxis1
+                            });
+                        }
                     });
 
                     var defaultValueFormatter = function(d,i) {
