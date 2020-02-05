@@ -78,7 +78,13 @@ nv.models.stackedArea = function() {
             data = d3.layout.stack()
                 .order(order)
                 .offset(offset)
-                .values(function(d) { return d.values })  //TODO: make values customizeable in EVERY model in this fashion
+                .values(function(d) {
+                  if (d.values && d.values.length == 1) {
+                      var value = d.values[0];
+                      d.values = [{x: value.x, y: value.y, xOffset: -1}, {x: value.x, y: value.y, xOffset: 1}];
+                    }
+                    return d.values;
+                })  //TODO: make values customizeable in EVERY model in this fashion
                 .x(getX)
                 .y(getY)
                 .out(function(d, y0, y) {
@@ -136,7 +142,7 @@ nv.models.stackedArea = function() {
 
             var area = d3.svg.area()
                 .defined(defined)
-                .x(function(d,i)  { return x(getX(d,i)) })
+                .x(function(d,i)  { return x(getX(d,i)) + (d.xOffset || 0) * 10 })
                 .y0(function(d) {
                     return y(d.display.y0)
                 })
@@ -147,7 +153,7 @@ nv.models.stackedArea = function() {
 
             var zeroArea = d3.svg.area()
                 .defined(defined)
-                .x(function(d,i)  { return x(getX(d,i)) })
+                .x(function(d,i)  { return x(getX(d,i)) + (d.xOffset || 0) * 10 })
                 .y0(function(d) { return y(d.display.y0) })
                 .y1(function(d) { return y(d.display.y0) });
 

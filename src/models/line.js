@@ -157,7 +157,13 @@ nv.models.line = function() {
                 });
 
             var linePaths = groups.selectAll('path.nv-line')
-                .data(function(d) { return [d.values] });
+                .data(function(d) {
+                    if (d.values && d.values.length == 1) {
+                      var value = d.values[0];
+                      return [[{x: value.x, y: value.y, xOffset: -1}, {x: value.x, y: value.y, xOffset: 1}]];
+                    }
+                    return [d.values];
+                });
 
             linePaths.enter().append('path')
                 .attr('class', 'nv-line')
@@ -165,8 +171,8 @@ nv.models.line = function() {
                     d3.svg.line()
                     .interpolate(interpolate)
                     .defined(defined)
-                    .x(function(d,i) { return nv.utils.NaNtoZero(x0(getX(d,i))) })
-                    .y(function(d,i) { return nv.utils.NaNtoZero(y0(getY(d,i))) })
+                    .x(function(d,i) { return nv.utils.NaNtoZero(x0(getX(d,i))) + (d.xOffset || 0) * 20 })
+                    .y(function(d,i) { return nv.utils.NaNtoZero(y0(getY(d,i)))})
             );
 
             linePaths.watchTransition(renderWatch, 'line: linePaths')
@@ -174,7 +180,7 @@ nv.models.line = function() {
                     d3.svg.line()
                     .interpolate(interpolate)
                     .defined(defined)
-                    .x(function(d,i) { return nv.utils.NaNtoZero(x(getX(d,i))) })
+                    .x(function(d,i) { return nv.utils.NaNtoZero(x(getX(d,i))) + (d.xOffset || 0) * 20 })
                     .y(function(d,i) { return nv.utils.NaNtoZero(y(getY(d,i))) })
             );
 

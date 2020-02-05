@@ -1,4 +1,4 @@
-/* nvd3 version 1.8.5-dev (https://github.com/novus/nvd3) 2020-01-31 */
+/* nvd3 version 1.8.5-dev (https://github.com/novus/nvd3) 2020-02-05 */
 (function(){
 
 // set up main nv object
@@ -6660,7 +6660,13 @@ nv.models.line = function() {
                 });
 
             var linePaths = groups.selectAll('path.nv-line')
-                .data(function(d) { return [d.values] });
+                .data(function(d) {
+                    if (d.values && d.values.length == 1) {
+                      var value = d.values[0];
+                      return [[{x: value.x, y: value.y, xOffset: -1}, {x: value.x, y: value.y, xOffset: 1}]];
+                    }
+                    return [d.values];
+                });
 
             linePaths.enter().append('path')
                 .attr('class', 'nv-line')
@@ -6668,8 +6674,8 @@ nv.models.line = function() {
                     d3.svg.line()
                     .interpolate(interpolate)
                     .defined(defined)
-                    .x(function(d,i) { return nv.utils.NaNtoZero(x0(getX(d,i))) })
-                    .y(function(d,i) { return nv.utils.NaNtoZero(y0(getY(d,i))) })
+                    .x(function(d,i) { return nv.utils.NaNtoZero(x0(getX(d,i))) + (d.xOffset || 0) * 20 })
+                    .y(function(d,i) { return nv.utils.NaNtoZero(y0(getY(d,i)))})
             );
 
             linePaths.watchTransition(renderWatch, 'line: linePaths')
@@ -6677,7 +6683,7 @@ nv.models.line = function() {
                     d3.svg.line()
                     .interpolate(interpolate)
                     .defined(defined)
-                    .x(function(d,i) { return nv.utils.NaNtoZero(x(getX(d,i))) })
+                    .x(function(d,i) { return nv.utils.NaNtoZero(x(getX(d,i))) + (d.xOffset || 0) * 20 })
                     .y(function(d,i) { return nv.utils.NaNtoZero(y(getY(d,i))) })
             );
 
@@ -14322,7 +14328,13 @@ nv.models.stackedArea = function() {
             data = d3.layout.stack()
                 .order(order)
                 .offset(offset)
-                .values(function(d) { return d.values })  //TODO: make values customizeable in EVERY model in this fashion
+                .values(function(d) {
+                  if (d.values && d.values.length == 1) {
+                      var value = d.values[0];
+                      d.values = [{x: value.x, y: value.y, xOffset: -1}, {x: value.x, y: value.y, xOffset: 1}];
+                    }
+                    return d.values;
+                })  //TODO: make values customizeable in EVERY model in this fashion
                 .x(getX)
                 .y(getY)
                 .out(function(d, y0, y) {
@@ -14380,7 +14392,7 @@ nv.models.stackedArea = function() {
 
             var area = d3.svg.area()
                 .defined(defined)
-                .x(function(d,i)  { return x(getX(d,i)) })
+                .x(function(d,i)  { return x(getX(d,i)) + (d.xOffset || 0) * 10 })
                 .y0(function(d) {
                     return y(d.display.y0)
                 })
@@ -14391,7 +14403,7 @@ nv.models.stackedArea = function() {
 
             var zeroArea = d3.svg.area()
                 .defined(defined)
-                .x(function(d,i)  { return x(getX(d,i)) })
+                .x(function(d,i)  { return x(getX(d,i)) + (d.xOffset || 0) * 10 })
                 .y0(function(d) { return y(d.display.y0) })
                 .y1(function(d) { return y(d.display.y0) });
 
