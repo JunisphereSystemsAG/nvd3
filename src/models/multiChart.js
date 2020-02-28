@@ -360,23 +360,24 @@ nv.models.multiChart = function() {
             var rbcOffset = 0;
             var groupSpacing;
 
-            if(dataStack1.length){d3.transition(stack1Wrap).call(stack1);}
-            if(dataStack2.length){d3.transition(stack2Wrap).call(stack2);}
+            d3.transition(stack1Wrap).call(stack1);
+            d3.transition(stack2Wrap).call(stack2);
 
             if (dataBars1.length) {
-                d3.transition(bars1Wrap).call(bars1);
                 if (dataBars1.some(function(d){return !d.disabled})){
                     rbcOffset = bars1.rangeBandCentreOffset();
                     groupSpacing = bars1.groupSpacing();
                 }
             }
+            d3.transition(bars1Wrap).call(bars1);
+
             if (dataBars2.length) {
-                d3.transition(bars2Wrap).call(bars2);
                 if(dataBars2.some(function(d){return !d.disabled})){
                     rbcOffset = bars2.rangeBandCentreOffset();
                     groupSpacing = bars2.groupSpacing();
                 }
             }
+            d3.transition(bars2Wrap).call(bars2);
 
             if (dataLines1.length) {
                 if(rbcOffset > 0){
@@ -386,8 +387,9 @@ nv.models.multiChart = function() {
                     lines1.padData(false);
                     lines1.padDataOuter(0);
                 }
-                d3.transition(lines1Wrap).call(lines1);
             }
+            d3.transition(lines1Wrap).call(lines1);
+
             if (dataLines2.length) {
                 if(rbcOffset > 0){
                     lines2.padData(true);
@@ -396,8 +398,8 @@ nv.models.multiChart = function() {
                     lines2.padData(false);
                     lines2.padDataOuter(0);
                 }
-                d3.transition(lines2Wrap).call(lines2);
             }
+            d3.transition(lines2Wrap).call(lines2);
 
             if (dataBounds1.length) {
                 if(rbcOffset > 0){
@@ -421,8 +423,8 @@ nv.models.multiChart = function() {
             }
             d3.transition(bounds2Wrap).call(bounds2);
 
-            if(dataScatters1.length){d3.transition(scatters1Wrap).call(scatters1);}
-            if(dataScatters2.length){d3.transition(scatters2Wrap).call(scatters2);}
+            d3.transition(scatters1Wrap).call(scatters1);
+            d3.transition(scatters2Wrap).call(scatters2);
 
             xAxis
                 .scale(x)
