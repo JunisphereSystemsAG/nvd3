@@ -81,6 +81,47 @@ nv.models.multiChart = function() {
             var dataStack1 = data.filter(function(d) {return d.type == 'area' && d.yAxis == 1});
             var dataStack2 = data.filter(function(d) {return d.type == 'area' && d.yAxis == 2});
 
+            // set back references to chart
+            for(var j=0,jl=dataLines1.length;j<jl;j++){
+                dataLines1[j].chart = lines1;
+                dataLines1[j].chartSeriesIndex = j;
+            }
+
+            for(var j=0,jl=dataLines2.length;j<jl;j++){
+                dataLines2[j].chart = lines2;
+                dataLines2[j].chartSeriesIndex = j;
+            }
+
+            for(var j=0,jl=dataStack1.length;j<jl;j++){
+                dataStack1[j].chart = stack1;
+                dataStack1[j].chartSeriesIndex = j;
+            }
+
+            for(var j=0,jl=dataStack2.length;j<jl;j++){
+                dataStack2[j].chart = stack2;
+                dataStack2[j].chartSeriesIndex = j;
+            }
+
+            for(var j=0,jl=dataScatters1.length;j<jl;j++){
+                dataScatters1[j].chart = scatters1;
+                dataScatters1[j].chartSeriesIndex = j;
+            }
+
+            for(var j=0,jl=dataScatters2.length;j<jl;j++){
+                dataScatters2[j].chart = scatters2;
+                dataScatters2[j].chartSeriesIndex = j;
+            }
+
+            for(var j=0,jl=dataBars1.length;j<jl;j++){
+                dataBars1[j].chart = bars1;
+                dataBars1[j].chartSeriesIndex = j;
+            }
+
+            for(var j=0,jl=dataBars2.length;j<jl;j++){
+                dataBars2[j].chart = bars2;
+                dataBars2[j].chartSeriesIndex = j;
+            }
+
             var dataBounds1 = [];
             var chartData1 = [dataLines1, dataScatters1, dataBars1, dataStack1];
 
@@ -203,45 +244,65 @@ nv.models.multiChart = function() {
             }
 
             bounds1
+                .xDomain(x.domain())
+                .xRange(x.range())
                 .width(availableWidth)
                 .height(availableHeight)
                 .interpolate(interpolateBounds);
             bounds2
+                .xDomain(x.domain())
+                .xRange(x.range())
                 .width(availableWidth)
                 .height(availableHeight)
                 .interpolate(interpolateBounds);
             lines1
+                .xDomain(x.domain())
+                .xRange(x.range())
                 .width(availableWidth)
                 .height(availableHeight)
                 .interpolate(interpolate)
                 .color(color_array.filter(function(d,i) { return !data[i].disabled && data[i].yAxis == 1 && data[i].type == 'line'}));
             lines2
+                .xDomain(x.domain())
+                .xRange(x.range())
                 .width(availableWidth)
                 .height(availableHeight)
                 .interpolate(interpolate)
                 .color(color_array.filter(function(d,i) { return !data[i].disabled && data[i].yAxis == 2 && data[i].type == 'line'}));
             scatters1
+                .xDomain(x.domain())
+                .xRange(x.range())
                 .width(availableWidth)
                 .height(availableHeight)
                 .color(color_array.filter(function(d,i) { return !data[i].disabled && data[i].yAxis == 1 && data[i].type == 'scatter'}));
             scatters2
+                .xDomain(x.domain())
+                .xRange(x.range())
                 .width(availableWidth)
                 .height(availableHeight)
                 .color(color_array.filter(function(d,i) { return !data[i].disabled && data[i].yAxis == 2 && data[i].type == 'scatter'}));
             bars1
+                .xDomain(x.domain())
+                .xRange(x.range())
                 .width(availableWidth)
                 .height(availableHeight)
                 .color(color_array.filter(function(d,i) { return !data[i].disabled && data[i].type == 'bar'}));
             bars2
+                .xDomain(x.domain())
+                .xRange(x.range())
                 .width(availableWidth)
                 .height(availableHeight)
                 .color(color_array.filter(function(d,i) { return !data[i].disabled && data[i].type == 'bar'}));
             stack1
+                .xDomain(x.domain())
+                .xRange(x.range())
                 .width(availableWidth)
                 .height(availableHeight)
                 .interpolate(interpolate)
                 .color(color_array.filter(function(d,i) { return !data[i].disabled && data[i].yAxis == 1 && data[i].type == 'area'}));
             stack2
+                .xDomain(x.domain())
+                .xRange(x.range())
                 .width(availableWidth)
                 .height(availableHeight)
                 .interpolate(interpolate)
@@ -511,13 +572,15 @@ nv.models.multiChart = function() {
               }
             }
 
-            function highlightPoint(serieIndex, pointIndex, b){
-              for(var i=0, il=charts.length; i < il; i++){
-                var chart = charts[i];
-                try {
-                  chart.highlightPoint(serieIndex, pointIndex, b);
-                } catch(e){}
-              }
+            function highlightPoint(serie, pointIndex, b){
+                var chart = serie.chart;
+                var chartSeriesIndex = serie.chartSeriesIndex;
+
+                if(chart && chartSeriesIndex >= 0){
+                    try {
+                      chart.highlightPoint(chartSeriesIndex, pointIndex, b);
+                    } catch(e){}
+                }
             }
 
             if(useInteractiveGuideline){
@@ -569,7 +632,7 @@ nv.models.multiChart = function() {
 
                             var pointYValue = chart.y()(point, pointIndex);
                             if (pointYValue !== null) {
-                                highlightPoint(i, pointIndex, true);
+                                highlightPoint(series, pointIndex, true);
                             }
                             if (point === undefined) return;
                             if (singlePoint === undefined) singlePoint = point;
