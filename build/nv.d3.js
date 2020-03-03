@@ -1,4 +1,4 @@
-/* nvd3 version 1.8.5-dev (https://github.com/novus/nvd3) 2020-02-28 */
+/* nvd3 version 1.8.5-dev (https://github.com/novus/nvd3) 2020-03-03 */
 (function(){
 
 // set up main nv object
@@ -6661,7 +6661,7 @@ nv.models.line = function() {
 
             var linePaths = groups.selectAll('path.nv-line')
                 .data(function(d) {
-                    if (d.values && d.values.length == 1) {
+                    if (d.values && d.values.filter(function(v){return nv.utils.isNumber(v.y);}).length == 1) {
                       var value = d.values[0];
                       return [[{x: value.x, y: value.y, xOffset: -1}, {x: value.x, y: value.y, xOffset: 1}]];
                     }
