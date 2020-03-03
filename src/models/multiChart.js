@@ -244,65 +244,45 @@ nv.models.multiChart = function() {
             }
 
             bounds1
-                .xDomain(x.domain())
-                .xRange(x.range())
                 .width(availableWidth)
                 .height(availableHeight)
                 .interpolate(interpolateBounds);
             bounds2
-                .xDomain(x.domain())
-                .xRange(x.range())
                 .width(availableWidth)
                 .height(availableHeight)
                 .interpolate(interpolateBounds);
             lines1
-                .xDomain(x.domain())
-                .xRange(x.range())
                 .width(availableWidth)
                 .height(availableHeight)
                 .interpolate(interpolate)
                 .color(color_array.filter(function(d,i) { return !data[i].disabled && data[i].yAxis == 1 && data[i].type == 'line'}));
             lines2
-                .xDomain(x.domain())
-                .xRange(x.range())
                 .width(availableWidth)
                 .height(availableHeight)
                 .interpolate(interpolate)
                 .color(color_array.filter(function(d,i) { return !data[i].disabled && data[i].yAxis == 2 && data[i].type == 'line'}));
             scatters1
-                .xDomain(x.domain())
-                .xRange(x.range())
                 .width(availableWidth)
                 .height(availableHeight)
                 .color(color_array.filter(function(d,i) { return !data[i].disabled && data[i].yAxis == 1 && data[i].type == 'scatter'}));
             scatters2
-                .xDomain(x.domain())
-                .xRange(x.range())
                 .width(availableWidth)
                 .height(availableHeight)
                 .color(color_array.filter(function(d,i) { return !data[i].disabled && data[i].yAxis == 2 && data[i].type == 'scatter'}));
             bars1
-                .xDomain(x.domain())
-                .xRange(x.range())
                 .width(availableWidth)
                 .height(availableHeight)
                 .color(color_array.filter(function(d,i) { return !data[i].disabled && data[i].type == 'bar'}));
             bars2
-                .xDomain(x.domain())
-                .xRange(x.range())
                 .width(availableWidth)
                 .height(availableHeight)
                 .color(color_array.filter(function(d,i) { return !data[i].disabled && data[i].type == 'bar'}));
             stack1
-                .xDomain(x.domain())
-                .xRange(x.range())
                 .width(availableWidth)
                 .height(availableHeight)
                 .interpolate(interpolate)
                 .color(color_array.filter(function(d,i) { return !data[i].disabled && data[i].yAxis == 1 && data[i].type == 'area'}));
             stack2
-                .xDomain(x.domain())
-                .xRange(x.range())
                 .width(availableWidth)
                 .height(availableHeight)
                 .interpolate(interpolate)
