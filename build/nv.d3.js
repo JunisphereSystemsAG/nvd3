@@ -13399,7 +13399,7 @@ nv.models.scatter = function() {
 
             points.attr('class', function (d) {
                 return 'nv-point nv-point-' + d[1] + (d[0] && nv.utils.isNumber(d[0].y) ? " defined" : "");
-            })
+            });
 
             // add label a label to scatter chart
             if(showLabels)
