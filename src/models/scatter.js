@@ -454,12 +454,10 @@ nv.models.scatter = function() {
                     });
             points.enter().append('path')
                 .attr('class', function (d) {
-                    return 'nv-point nv-point-' + d[1];
+                    return 'nv-point nv-point-' + d[1] + (d[0] && nv.utils.isNumber(d[0].y) ? " defined" : "");
                 })
                 .style('fill', function (d) { return d.color })
                 .style('stroke', function (d) { return d.color })
-                .style('fill-opacity', function(d){return d[0] && nv.utils.isNumber(d[0].y) ? 1 : 0;})
-                .style('stroke-opacity', function(d){return d[0] && nv.utils.isNumber(d[0].y) ? 1 : 0;})
                 .attr('transform', function(d) {
                     return 'translate(' + nv.utils.NaNtoZero(x0(getX(d[0],d[1]))) + ',' + nv.utils.NaNtoZero(y0(getY(d[0],d[1]))) + ')'
                 })
@@ -490,6 +488,10 @@ nv.models.scatter = function() {
                     .type(function(d) { return getShape(d[0]); })
                     .size(function(d) { return z(getSize(d[0],d[1])) })
             );
+
+            points.attr('class', function (d) {
+                return 'nv-point nv-point-' + d[1] + (d[0] && nv.utils.isNumber(d[0].y) ? " defined" : "");
+            })
 
             // add label a label to scatter chart
             if(showLabels)
