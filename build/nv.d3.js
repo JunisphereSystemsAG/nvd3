@@ -6661,8 +6661,9 @@ nv.models.line = function() {
 
             var linePaths = groups.selectAll('path.nv-line')
                 .data(function(d) {
-                    if (d.values && d.values.filter(function(v){return nv.utils.isNumber(v.y);}).length == 1) {
-                      var value = d.values[0];
+                    var definedValues = (d.values || []).filter(function(v){return nv.utils.isNumber(v.y);});
+                    if (definedValues.length == 1) {
+                      var value = definedValues[0];
                       return [[{x: value.x, y: value.y, xOffset: -1}, {x: value.x, y: value.y, xOffset: 1}]];
                     }
                     return [d.values];
