@@ -6661,7 +6661,7 @@ nv.models.line = function() {
 
             var linePaths = groups.selectAll('path.nv-line')
                 .data(function(d) {
-                    var definedValues = (d.values || []).filter(function(v){return nv.utils.isNumber(v.y);});
+                    var definedValues = (d.values || []).filter(function(v){return v && nv.utils.isNumber(v.y);});
                     if (definedValues.length == 1) {
                       var value = definedValues[0];
                       return [[{x: value.x, y: value.y, xOffset: -1}, {x: value.x, y: value.y, xOffset: 1}]];
@@ -13109,7 +13109,7 @@ nv.models.scatter = function() {
                 .attr('id', 'nv-edge-clip-' + id)
                 .append('rect')
                 .attr('transform', 'translate( -10, -10)');
-                
+
             wrap.select('#nv-edge-clip-' + id + ' rect')
                 .attr('width', availableWidth + 20)
                 .attr('height', (availableHeight > 0) ? availableHeight + 20 : 0);
@@ -13125,10 +13125,10 @@ nv.models.scatter = function() {
 
                 // inject series and point index for reference into voronoi
                 if (useVoronoi === true) {
-                    
+
                     // nuke all voronoi paths on reload and recreate them
                     wrap.select('.nv-point-paths').selectAll('path').remove();
-                    
+
                     var vertices = d3.merge(data.map(function(group, groupIndex) {
                             return group.values
                                 .map(function(point, pointIndex) {
@@ -13366,6 +13366,8 @@ nv.models.scatter = function() {
                 })
                 .style('fill', function (d) { return d.color })
                 .style('stroke', function (d) { return d.color })
+                .style('fill-opacity', function(d){return d[0] && nv.utils.isNumber(d[0].y) ? 1 : 0;})
+                .style('stroke-opacity', function(d){return d[0] && nv.utils.isNumber(d[0].y) ? 1 : 0;})
                 .attr('transform', function(d) {
                     return 'translate(' + nv.utils.NaNtoZero(x0(getX(d[0],d[1]))) + ',' + nv.utils.NaNtoZero(y0(getY(d[0],d[1]))) + ')'
                 })
