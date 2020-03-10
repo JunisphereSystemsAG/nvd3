@@ -98,9 +98,7 @@ nv.render = function render(step) {
         for (var i = 0; i < step && (graph = nv.render.queue[i]); i++) {
             chart = graph.generate();
             if (typeof graph.callback == typeof(Function)){
-                requestAnimationFrame(function(){
-                  graph.callback(chart);
-                });
+                graph.callback(chart);
             }
         }
 
