@@ -80,42 +80,7 @@ nv.deprecated = function(name, info) {
     }
 };
 
-// The nv.render function is used to queue up chart rendering
-// in non-blocking async functions.
-// When all queued charts are done rendering, nv.dispatch.render_end is invoked.
-// nv.render = function render(step) {
-//     // number of graphs to generate in each timeout loop
-//     step = step || 1;
-
-//     nv.render.active = true;
-//     nv.dispatch.render_start();
-
-//     var renderLoop = function() {
-//         var chart, graph;
-
-//         for (var i = 0; i < step && (graph = nv.render.queue[i]); i++) {
-//             chart = graph.generate();
-//             if (typeof graph.callback == typeof(Function)){
-//                 graph.callback(chart);
-//             }
-//         }
-
-//         nv.render.queue.splice(0, i);
-
-//         if (nv.render.queue.length) {
-//             setTimeout(renderLoop);
-//         }
-//         else {
-//             nv.dispatch.render_end();
-//             nv.render.active = false;
-//         }
-//     };
-
-//     setTimeout(renderLoop);
-// };
-
-// nv.render.active = false;
-// nv.render.queue = [];
+nv.renderActive = 0;
 
 /*
 Adds a chart to the async rendering queue. This method can take arguments in two forms:
@@ -135,6 +100,11 @@ should return the chart model.  See examples/lineChart.html for a usage example.
 The callback function is optional, and it is called when the generate function completes.
 */
 nv.addGraph = function(obj) {
+    if (nv.renderActive == 0){
+        nv.dispatch.render_start();
+    }
+    nv.renderActive = nv.renderActive + 1;
+
     if (typeof arguments[0] === typeof(Function)) {
         obj = {generate: arguments[0], callback: arguments[1]};
     }
@@ -144,13 +114,12 @@ nv.addGraph = function(obj) {
         if (typeof obj.callback == typeof(Function)){
             obj.callback(chart);
         }
+
+        nv.renderActive = nv.renderActive - 1;
+        if (nv.renderActive == 0){
+            nv.dispatch.render_end();
+        }
     });
-
-    // nv.render.queue.push(obj);
-
-    // if (!nv.render.active) {
-    //     nv.render();
-    // }
 };
 
 // Node/CommonJS exports
