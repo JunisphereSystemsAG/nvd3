@@ -1,4 +1,4 @@
-/* nvd3 version 1.8.5-dev (https://github.com/novus/nvd3) 2020-03-03 */
+/* nvd3 version 1.8.5-dev (https://github.com/novus/nvd3) 2020-03-10 */
 (function(){
 
 // set up main nv object
@@ -97,7 +97,11 @@ nv.render = function render(step) {
 
         for (var i = 0; i < step && (graph = nv.render.queue[i]); i++) {
             chart = graph.generate();
-            if (typeof graph.callback == typeof(Function)) graph.callback(chart);
+            if (typeof graph.callback == typeof(Function)){
+                requestAnimationFrame(function(){
+                  graph.callback(chart);
+                });
+            }
         }
 
         nv.render.queue.splice(0, i);
