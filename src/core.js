@@ -83,39 +83,39 @@ nv.deprecated = function(name, info) {
 // The nv.render function is used to queue up chart rendering
 // in non-blocking async functions.
 // When all queued charts are done rendering, nv.dispatch.render_end is invoked.
-nv.render = function render(step) {
-    // number of graphs to generate in each timeout loop
-    step = step || 1;
+// nv.render = function render(step) {
+//     // number of graphs to generate in each timeout loop
+//     step = step || 1;
 
-    nv.render.active = true;
-    nv.dispatch.render_start();
+//     nv.render.active = true;
+//     nv.dispatch.render_start();
 
-    var renderLoop = function() {
-        var chart, graph;
+//     var renderLoop = function() {
+//         var chart, graph;
 
-        for (var i = 0; i < step && (graph = nv.render.queue[i]); i++) {
-            chart = graph.generate();
-            if (typeof graph.callback == typeof(Function)){
-                graph.callback(chart);
-            }
-        }
+//         for (var i = 0; i < step && (graph = nv.render.queue[i]); i++) {
+//             chart = graph.generate();
+//             if (typeof graph.callback == typeof(Function)){
+//                 graph.callback(chart);
+//             }
+//         }
 
-        nv.render.queue.splice(0, i);
+//         nv.render.queue.splice(0, i);
 
-        if (nv.render.queue.length) {
-            setTimeout(renderLoop);
-        }
-        else {
-            nv.dispatch.render_end();
-            nv.render.active = false;
-        }
-    };
+//         if (nv.render.queue.length) {
+//             setTimeout(renderLoop);
+//         }
+//         else {
+//             nv.dispatch.render_end();
+//             nv.render.active = false;
+//         }
+//     };
 
-    setTimeout(renderLoop);
-};
+//     setTimeout(renderLoop);
+// };
 
-nv.render.active = false;
-nv.render.queue = [];
+// nv.render.active = false;
+// nv.render.queue = [];
 
 /*
 Adds a chart to the async rendering queue. This method can take arguments in two forms:
@@ -139,11 +139,18 @@ nv.addGraph = function(obj) {
         obj = {generate: arguments[0], callback: arguments[1]};
     }
 
-    nv.render.queue.push(obj);
+    setTimeout(function(){
+        var chart = obj.generate();
+        if (typeof obj.callback == typeof(Function)){
+            obj.callback(chart);
+        }
+    });
 
-    if (!nv.render.active) {
-        nv.render();
-    }
+    // nv.render.queue.push(obj);
+
+    // if (!nv.render.active) {
+    //     nv.render();
+    // }
 };
 
 // Node/CommonJS exports
