@@ -123,7 +123,7 @@ nv.models.multiChart = function() {
             }
 
             var dataBounds1 = [];
-            var chartData1 = [dataLines1, dataScatters1, dataBars1, dataStack1];
+            var chartData1 = [dataLines1, dataScatters1, dataBars1.filter(function(d){return d.yAxis == 1}), dataStack1];
 
             for(var j=0,jl=chartData1.length;j<jl;j++){
                 for (var i=0,il=chartData1[j].length;i<il;i++){
@@ -134,7 +134,7 @@ nv.models.multiChart = function() {
             }
 
             var dataBounds2 = [];
-            var chartData2 = [dataLines2, dataScatters2, dataBars2, dataStack2];
+            var chartData2 = [dataLines2, dataScatters2, dataBars2.filter(function(d){return d.yAxis == 2}), dataStack2];
 
             for(var j=0,jl=chartData2.length;j<jl;j++){
                 for (var i=0,il=chartData2[j].length;i<il;i++){
