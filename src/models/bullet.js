@@ -28,7 +28,7 @@ nv.models.bullet = function() {
         , container = null
         , tickFormat = null
         , color = nv.utils.getColor(['#1f77b4'])
-        , dispatch = d3.dispatch('elementMouseover', 'elementMouseout', 'elementMousemove')
+        , dispatch = d3.dispatch('chartClick', 'elementMouseover', 'elementMouseout', 'elementMousemove')
         , defaultRangeLabels = ["Maximum", "Mean", "Minimum"]
         , legacyRangeClassNames = ["Max", "Avg", "Min"]
         , duration = 1000
@@ -50,6 +50,14 @@ nv.models.bullet = function() {
 
             container = d3.select(this);
             nv.utils.initSVG(container);
+
+            container.on('click', function (d, i) {
+                dispatch.chartClick({
+                    data: d,
+                    index: i,
+                    pos: d3.event
+                });
+            });
 
             var rangez = ranges.call(this, d, i).slice(),
                 markerz = markers.call(this, d, i).slice(),
@@ -99,14 +107,6 @@ nv.models.bullet = function() {
             var gEnter = wrapEnter.append('g');
             var g = wrap.select('g');
 
-            for(var i=0,il=rangez.length; i<il; i++){
-                var rangeClassNames = 'nv-range nv-range'+i;
-                if(i <= 2){
-                    rangeClassNames = rangeClassNames + ' nv-range'+legacyRangeClassNames[i];
-                }
-                gEnter.append('rect').attr('class', rangeClassNames);
-            }
-
             gEnter.append('rect').attr('class', 'nv-measure');
 
             wrap.attr('transform', 'translate(' + margin.left + ',' + margin.top + ')');
@@ -116,16 +116,47 @@ nv.models.bullet = function() {
             var xp0 = function(d) { return d < xd[0] ? x0(d) : x0(xd[0]) },
                 xp1 = function(d) { return d < xd[0] ? x1(d) : x1(xd[0]) };
 
-            for(var i=0,il=rangez.length; i<il; i++){
-                var range = rangez[i];
-                g.select('rect.nv-range'+i)
-                    .datum(range)
-                    .attr('height', availableHeight)
-                    .transition()
-                    .duration(duration)
-                    .attr('width', w1(range))
-                    .attr('x', xp1(xd[0]))
-            }
+            var gRanges = g.selectAll("rect.nv-range").data(rangez);
+
+            gRanges
+              .enter()
+              .append('rect')
+              .attr('class', 'nv-range')
+              .attr('height', availableHeight)
+              .attr('width', function(d){return w1(d)})
+              .attr('x', xp1(xd[0]))
+              .on('mouseover', function(d,i) {
+                  var label = rangeLabelz[i] || defaultRangeLabels[i];
+                  dispatch.elementMouseover({
+                      value: d,
+                      label: label,
+                      color: d3.select(this).style("fill")
+                  })
+              })
+              .on('mousemove', function() {
+                  dispatch.elementMousemove({
+                      value: measurez[0],
+                      label: measureLabelz[0] || 'Previous',
+                      color: d3.select(this).style("fill")
+                  })
+              })
+              .on('mouseout', function(d,i) {
+                  var label = rangeLabelz[i] || defaultRangeLabels[i];
+                  dispatch.elementMouseout({
+                      value: d,
+                      label: label,
+                      color: d3.select(this).style("fill")
+                  })
+              });
+
+            gRanges
+              .transition()
+              .duration(duration)
+              .attr('height', availableHeight)
+              .attr('width', function(d){return w1(d)})
+              .attr('x', xp1(xd[0]));
+
+            gRanges.exit().remove();
 
             g.select('rect.nv-measure')
                 .style('fill', color)
@@ -162,9 +193,10 @@ nv.models.bullet = function() {
             var markerData = markerz.map( function(marker, index) {
                 return {value: marker, label: markerLabelz[index]}
             });
-            gEnter
-              .selectAll("path.nv-markerTriangle")
-              .data(markerData)
+
+            var gMarkers = g.selectAll("path.nv-markerTriangle").data(markerData);
+
+            gMarkers
               .enter()
               .append('path')
               .attr('class', 'nv-markerTriangle')
@@ -193,18 +225,20 @@ nv.models.bullet = function() {
                   })
               });
 
-            g.selectAll("path.nv-markerTriangle")
-              .data(markerData)
+            gMarkers
               .transition()
               .duration(duration)
               .attr('transform', function(d) { return 'translate(' + x1(d.value) + ',' + (availableHeight / 2) + ')' });
 
+            gMarkers.exit().remove();
+
             var markerLinesData = markerLinez.map( function(marker, index) {
                 return {value: marker, label: markerLineLabelz[index]}
             });
-            gEnter
-              .selectAll("line.nv-markerLine")
-              .data(markerLinesData)
+
+            var gMarkerLines = g.selectAll("line.nv-markerLine").data(markerLinesData);
+
+            gMarkerLines
               .enter()
               .append('line')
               .attr('cursor', '')
@@ -237,37 +271,13 @@ nv.models.bullet = function() {
                   })
               });
 
-            g.selectAll("line.nv-markerLine")
-              .data(markerLinesData)
+            gMarkerLines
               .transition()
               .duration(duration)
               .attr('x1', function(d) { return x1(d.value) })
               .attr('x2', function(d) { return x1(d.value) });
 
-            wrap.selectAll('.nv-range')
-                .on('mouseover', function(d,i) {
-                    var label = rangeLabelz[i] || defaultRangeLabels[i];
-                    dispatch.elementMouseover({
-                        value: d,
-                        label: label,
-                        color: d3.select(this).style("fill")
-                    })
-                })
-                .on('mousemove', function() {
-                    dispatch.elementMousemove({
-                        value: measurez[0],
-                        label: measureLabelz[0] || 'Previous',
-                        color: d3.select(this).style("fill")
-                    })
-                })
-                .on('mouseout', function(d,i) {
-                    var label = rangeLabelz[i] || defaultRangeLabels[i];
-                    dispatch.elementMouseout({
-                        value: d,
-                        label: label,
-                        color: d3.select(this).style("fill")
-                    })
-                });
+            gMarkerLines.exit().remove();
         });
 
         return chart;

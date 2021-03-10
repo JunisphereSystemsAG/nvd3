@@ -22,7 +22,8 @@ nv.models.multiChart = function() {
         interactiveLayer = nv.interactiveGuideline(),
         useInteractiveGuideline = false,
         legendRightAxisHint = ' (right axis)',
-        duration = 250
+        duration = 250,
+        hoverKey = undefined
         ;
 
     //============================================================
@@ -403,7 +404,26 @@ nv.models.multiChart = function() {
             }
             d3.transition(bounds2Wrap).call(bounds2);
 
+            if (dataScatters1.length) {
+                if(rbcOffset > 0){
+                    scatters1.padData(true);
+                    scatters1.padDataOuter(groupSpacing);
+                } else{
+                    scatters1.padData(false);
+                    scatters1.padDataOuter(0);
+                }
+            }
             d3.transition(scatters1Wrap).call(scatters1);
+
+            if (dataScatters2.length) {
+                if(rbcOffset > 0){
+                    scatters2.padData(true);
+                    scatters2.padDataOuter(groupSpacing);
+                } else{
+                    scatters2.padData(false);
+                    scatters2.padDataOuter(0);
+                }
+            }
             d3.transition(scatters2Wrap).call(scatters2);
 
             xAxis
@@ -651,7 +671,8 @@ nv.models.multiChart = function() {
                         .data({
                             value: chart.x()( singlePoint,pointIndex ),
                             index: pointIndex,
-                            series: allData
+                            series: allData,
+                            key: hoverKey
                         })();
 
                     interactiveLayer.renderGuideLine(pointXLocation);
@@ -660,6 +681,71 @@ nv.models.multiChart = function() {
                 interactiveLayer.dispatch.on("elementMouseout",function(e) {
                     clearHighlights();
                 });
+
+                lines1.dispatch.on('elementMouseover', function(e){
+                     hoverKey = e.series.key;
+                });
+
+                lines1.dispatch.on('elementMouseout', function(e){
+                     hoverKey = undefined;
+                });
+
+                lines2.dispatch.on('elementMouseover', function(e){
+                    hoverKey = e.series.key;
+                });
+
+                lines2.dispatch.on('elementMouseout', function(e){
+                    hoverKey = undefined;
+                });
+
+                bars1.dispatch.on('elementMouseover', function(e){
+                    hoverKey = e.data.key;
+                });
+
+                bars1.dispatch.on('elementMouseout', function(e){
+                    hoverKey = undefined;
+                });
+
+                bars2.dispatch.on('elementMouseover', function(e){
+                    hoverKey = e.data.key;
+                });
+
+                bars2.dispatch.on('elementMouseout', function(e){
+                    hoverKey = undefined;
+                });
+
+                stack1.dispatch.on('areaMouseover', function(e){
+                    hoverKey = e.series;
+                });
+
+                stack1.dispatch.on('areaMouseout', function(e){
+                    hoverKey = undefined;
+                });
+
+                stack2.dispatch.on('areaMouseover', function(e){
+                    hoverKey = e.series;
+                });
+
+                stack2.dispatch.on('areaMouseout', function(e){
+                    hoverKey = undefined;
+                });
+
+                scatters1.dispatch.on('elementMouseover', function(e){
+                    hoverKey = e.series.key;
+                });
+
+                scatters2.dispatch.on('elementMouseover', function(e){
+                    hoverKey = e.series.key;
+                });
+
+                scatters1.dispatch.on('elementMouseout', function(e){
+                    hoverKey = undefined;
+                });
+
+                scatters2.dispatch.on('elementMouseout', function(e){
+                    hoverKey = undefined;
+                });
+
             } else {
                 lines1.dispatch.on('elementMouseover.tooltip', mouseover_line);
                 lines2.dispatch.on('elementMouseover.tooltip', mouseover_line);
@@ -799,16 +885,18 @@ nv.models.multiChart = function() {
             if (useInteractiveGuideline) {
                 bounds1.interactive(false);
                 bounds2.useVoronoi(false);
-                lines1.interactive(false);
-                lines1.useVoronoi(false);
-                lines2.interactive(false);
-                lines2.useVoronoi(false);
+                lines1.interactive(true);
+                lines1.useVoronoi(true);
+                lines2.interactive(true);
+                lines2.useVoronoi(true);
                 stack1.interactive(false);
                 stack1.useVoronoi(false);
                 stack2.interactive(false);
                 stack2.useVoronoi(false);
-                scatters1.interactive(false);
-                scatters2.interactive(false);
+                scatters1.interactive(true);
+                scatters2.interactive(true);
+                scatters1.useVoronoi(true);
+                scatters2.useVoronoi(true);
             }
         }},
 
@@ -817,7 +905,12 @@ nv.models.multiChart = function() {
             [bounds1, bounds2, lines1, lines2, stack1, stack2, scatters1, scatters2, xAxis, yAxis1, yAxis2].forEach(function(model){
               model.duration(duration);
             });
-        }}
+        }},
+
+        stackOrdered: {get: function(){return bars1.stackOrdered();}, set: function(_){
+            bars1.stackOrdered(_);
+            bars2.stackOrdered(_);
+        }},
     });
 
     nv.utils.initOptions(chart);

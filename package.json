@@ -3,7 +3,7 @@
   "version": "1.8.5-dev",
   "description": "A reusable charting library written in d3.js",
   "url": "https://github.com/novus/nvd3",
-  "main": "build/nv.d3.js",
+  "main": "src/nv.d3.js",
   "scripts": {
     "test": "grunt",
     "build": "grunt"

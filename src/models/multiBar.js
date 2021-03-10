@@ -1,3 +1,4 @@
+_ = require("lodash")
 
 nv.models.multiBar = function() {
     "use strict";
@@ -34,6 +35,7 @@ nv.models.multiBar = function() {
         , fillOpacity = 0.75
         , rangeBandCentreOffset = 0
         , dispatch = d3.dispatch('chartClick', 'elementClick', 'elementDblClick', 'elementMouseover', 'elementMouseout', 'elementMousemove', 'renderEnd')
+        , stackOrdered = false
         ;
 
     //============================================================
@@ -94,30 +96,63 @@ nv.models.multiBar = function() {
                         };}
                 )}];
 
-            if (stacked) {
-                var parsed = d3.layout.stack()
-                    .offset(stackOffset)
-                    .values(function(d){ return d.values })
-                    .y(getY)
-                (!data.length && hideable ? hideable : data);
+            var stackedData = undefined;
 
-                parsed.forEach(function(series, i){
-                    // if series is non-stackable, use un-parsed data
-                    if (series.nonStackable) {
-                        data[i].nonStackableSeries = nonStackableCount++;
-                        parsed[i] = data[i];
-                    } else {
-                        // don't stack this seires on top of the nonStackable seriees
-                        if (i > 0 && parsed[i - 1].nonStackable){
-                            parsed[i].values.map(function(d,j){
-                                d.y0 -= parsed[i - 1].values[j].y;
-                                d.y1 = d.y0 + d.y;
-                            });
+            if (stacked) {
+                if (!stackOrdered){
+                    var parsed = d3.layout.stack()
+                        .offset(stackOffset)
+                        .values(function(d){ return d.values })
+                        .y(getY)
+                    (!data.length && hideable ? hideable : data);
+
+                    parsed.forEach(function(series, i){
+                        // if series is non-stackable, use un-parsed data
+                        if (series.nonStackable) {
+                            data[i].nonStackableSeries = nonStackableCount++;
+                            parsed[i] = data[i];
+                        } else {
+                            // don't stack this seires on top of the nonStackable seriees
+                            if (i > 0 && parsed[i - 1].nonStackable){
+                                parsed[i].values.map(function(d,j){
+                                    d.y0 -= parsed[i - 1].values[j].y;
+                                    d.y1 = d.y0 + d.y;
+                                });
+                            }
                         }
-                    }
-                });
-                data = parsed;
+                    });
+                    data = parsed;
+                } else {
+                   stackedData = {};
+
+                   _.forEach(data, function(d){
+                      _.forEach(d.values, function(v){
+                        if(!stackedData[v.x]){
+                            stackedData[v.x] = [];
+                        }
+
+                        stackedData[v.x].push(v);
+                      });
+                   });
+
+                   _.forEach(stackedData, function(values,x){
+                      values = _.sortBy(_.filter(values, function(v){return _.isFinite(v.y) && v.y != 0}), function(v){return v.order});
+
+                      for(var i=0,il=values.length;i<il;i++){
+                        var value = values[i];
+
+                        if (i > 0){
+                          value.y0 = values[i - 1].y1;
+                          value.y1 = value.y0 + value.y;
+                        } else {
+                          value.y0 = 0;
+                          value.y1 = value.y;
+                        }
+                      }
+                   });
+                }
             }
+
             //add series index and key to each data point for reference
             data.forEach(function(series, i) {
                 series.values.forEach(function(point) {
@@ -128,25 +163,44 @@ nv.models.multiBar = function() {
 
             // HACK for negative value stacking
             if (stacked && data.length > 0) {
-                data[0].values.map(function(d,i) {
-                    var posBase = 0, negBase = 0;
-                    data.map(function(d, idx) {
-                        if (!data[idx].nonStackable) {
-                            var f = d.values[i]
-                            f.size = Math.abs(f.y);
-                            if (f.y<0)  {
-                                f.y1 = negBase;
-                                negBase = negBase - f.size;
-                            } else
-                            {
-                                f.y1 = f.size + posBase;
-                                posBase = posBase + f.size;
+                if (!stackOrdered) {
+                    data[0].values.map(function(d,i) {
+                        var posBase = 0, negBase = 0;
+                        data.map(function(d, idx) {
+                            if (!data[idx].nonStackable) {
+                                var f = d.values[i]
+                                f.size = Math.abs(f.y);
+                                if (f.y<0)  {
+                                    f.y1 = negBase;
+                                    negBase = negBase - f.size;
+                                } else
+                                {
+                                    f.y1 = f.size + posBase;
+                                    posBase = posBase + f.size;
+                                }
                             }
-                        }
 
+                        });
                     });
-                });
+                } else {
+                  _.forEach(stackedData, function(stack){
+                      stack = _.sortBy(_.filter(stack, function(v){return _.isFinite(v.y) && v.y != 0}), function(v){return v.order});
+
+                      var posBase = 0, negBase = 0;
+                      stack.forEach(function(v){
+                        v.size = Math.abs(v.y);
+                        if (v.y < 0)  {
+                            v.y1 = negBase;
+                            negBase = negBase - v.size;
+                        } else {
+                            v.y1 = v.size + posBase;
+                            posBase = posBase + v.size;
+                        }
+                      });
+                  });
+                }
             }
+
             // Setup Scales
             // remap and flatten the data for use in calculating the scales' domains
             var seriesData = (xDomain && yDomain) ? [] : // if we know xDomain and yDomain, no need to calculate
@@ -259,8 +313,8 @@ nv.models.multiBar = function() {
                     .attr('transform', function(d,i) { return 'translate(' + x(getX(d,i)) + ',0)'; })
                 ;
             bars
-                .style('fill', function(d,i,j){ return color(d, j, i);  })
-                .style('stroke', function(d,i,j){ return color(d, j, i); })
+                .style('fill', function(d,i,j){ return d.color ? color(d, j, i) : undefined; })
+                .style('stroke', function(d,i,j){ return d.color ? color(d, j, i) : undefined; })
                 .on('mouseover', function(d,i) { //TODO: figure out why j works above, but not here
                     d3.select(this).classed('hover', true);
                     dispatch.elementMouseover({
@@ -500,6 +554,7 @@ nv.models.multiBar = function() {
         fillOpacity: {get: function(){return fillOpacity;}, set: function(_){fillOpacity=_;}},
         showValues: {get: function(){return showValues;}, set: function(_){showValues=_;}},
         valueFormat: {get: function(){return valueFormat;}, set: function(_){valueFormat=_;}},
+        stackOrdered: {get: function(){return stackOrdered;}, set: function(_){stackOrdered=_;}},
 
         // options that require extra logic in the setter
         margin: {get: function(){return margin;}, set: function(_){

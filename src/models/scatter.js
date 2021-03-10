@@ -494,6 +494,7 @@ nv.models.scatter = function() {
             });
 
             // add label a label to scatter chart
+
             if(showLabels)
             {
                 var titles =  groups.selectAll('.nv-label')
@@ -507,36 +508,73 @@ nv.models.scatter = function() {
                                 })
                         });
 
-                titles.enter().append('text')
+                var titlesEnter = titles.enter().append('text')
                     .style('fill', function (d,i) {
                         return d.color })
                     .style('stroke-opacity', 0)
                     .style('fill-opacity', 1)
+                    .attr('text-anchor', 'middle')
                     .attr('transform', function(d) {
-                        var dx = nv.utils.NaNtoZero(x0(getX(d[0],d[1]))) + Math.sqrt(z(getSize(d[0],d[1]))/Math.PI) + 2;
-                        return 'translate(' + dx + ',' + nv.utils.NaNtoZero(y0(getY(d[0],d[1]))) + ')';
-                    })
-                    .text(function(d,i){
-                        return d[0].label;});
+                        var dx = nv.utils.NaNtoZero(x0(getX(d[0],d[1])));
+                        return 'translate(' + dx + ',' + (nv.utils.NaNtoZero(y0(getY(d[0],d[1]))) + 3) + ')';
+                    });
+                    // .text(function(d,i){
+                    //     return d[0].label;});
+
+                titlesEnter.each(function(d){
+                    var text = d3.select(this);
+                    var lines = d[0].label.split("\n")
+
+                    for (var i=0,il=lines.length;i<il;i++){
+                      var line = lines[i];
+                      text.append('tspan').text(line).attr("x", 0).attr("dy", (i * 1.2) + "em");
+                    }
+
+                });
 
                 titles.exit().remove();
                 groups.exit().selectAll('path.nv-label')
                     .watchTransition(renderWatch, 'scatter exit')
                     .attr('transform', function(d) {
-                        var dx = nv.utils.NaNtoZero(x(getX(d[0],d[1])))+ Math.sqrt(z(getSize(d[0],d[1]))/Math.PI)+2;
-                        return 'translate(' + dx + ',' + nv.utils.NaNtoZero(y(getY(d[0],d[1]))) + ')';
+                        var dx = nv.utils.NaNtoZero(x(getX(d[0],d[1])));
+                        return 'translate(' + dx + ',' + (nv.utils.NaNtoZero(y(getY(d[0],d[1]))) + 3) + ')';
                     })
                     .remove();
-               titles.each(function(d) {
-                  d3.select(this)
-                    .classed('nv-label', true)
-                    .classed('nv-label-' + d[1], false)
-                    .classed('hover',false);
+
+                titles.each(function(d) {
+                    var text = d3.select(this);
+                    text.selectAll('tspan').remove();
+
+                    var lines = d[0].label.split("\n")
+
+                    for (var i=0,il=lines.length;i<il;i++){
+                      var line = lines[i];
+                      text.append('tspan').text(line).attr("x", 0).attr("dy", (i * 1.2) + "em");
+                    }
+
+                    d3.select(this)
+                      .classed('nv-label', true)
+                      .classed('nv-label-' + d[1], false)
+                      .classed('hover',false);
+
                 });
+
                 titles.watchTransition(renderWatch, 'scatter labels')
                     .attr('transform', function(d) {
-                        var dx = nv.utils.NaNtoZero(x(getX(d[0],d[1])))+ Math.sqrt(z(getSize(d[0],d[1]))/Math.PI)+2;
-                        return 'translate(' + dx + ',' + nv.utils.NaNtoZero(y(getY(d[0],d[1]))) + ')'
+                        var xValue = getX(d[0],d[1]);
+                        var yValue = getY(d[0],d[1]);
+
+                        var dx = nv.utils.NaNtoZero(x(xValue));
+
+                        var lines = d[0].label.split("\n")
+                        var dy = nv.utils.NaNtoZero(y(yValue)) + (lines.length > 1 ? -3 : 3);
+
+                        if(xValue >= x.domain()[0] && xValue <= x.domain()[1] && yValue >= y.domain()[0] && yValue <= y.domain()[1] ){
+                          var width = this.getBoundingClientRect().width;
+                          var dx = Math.max(Math.min(dx, availableWidth - width / 2 - 2), width / 2 + 2);
+                        }
+
+                        return 'translate(' + dx + ',' + dy + ')'
                     });
             }
 

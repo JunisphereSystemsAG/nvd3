@@ -13,6 +13,7 @@ nv.models.scatterChart = function() {
         , distX        = nv.models.distribution()
         , distY        = nv.models.distribution()
         , tooltip      = nv.models.tooltip()
+        , interactiveLayer = nv.interactiveGuideline()
         ;
 
     var margin       = {top: 30, right: 20, bottom: 50, left: 75}
@@ -149,6 +150,7 @@ nv.models.scatterChart = function() {
             gEnter.append('g').attr('class', 'nv-regressionLinesWrap');
             gEnter.append('g').attr('class', 'nv-distWrap');
             gEnter.append('g').attr('class', 'nv-legendWrap');
+            gEnter.append('g').attr('class', 'nv-interactive');
 
             if (rightAlignYAxis) {
                 g.select(".nv-y.nv-axis")
@@ -286,6 +288,15 @@ nv.models.scatterChart = function() {
                     .call(distY);
             }
 
+            interactiveLayer
+                .width(availableWidth)
+                .height(availableHeight)
+                .margin({left:margin.left, top:margin.top})
+                .svgContainer(container)
+                .xScale(x)
+                .yScale(y);
+            wrap.select(".nv-interactive").call(interactiveLayer);
+
             //============================================================
             // Event Handling/Dispatching (in chart's scope)
             //------------------------------------------------------------
@@ -348,6 +359,7 @@ nv.models.scatterChart = function() {
     chart.distX = distX;
     chart.distY = distY;
     chart.tooltip = tooltip;
+    chart.interactiveLayer = interactiveLayer;
 
     chart.options = nv.utils.optionsFunc.bind(chart);
     chart._options = Object.create({}, {

@@ -13,6 +13,7 @@ nv.interactiveGuideline = function() {
         ,   width = null
         ,   height = null
         ,   xScale = d3.scale.linear()
+        ,   yScale = null
         ,   dispatch = d3.dispatch('elementMousemove', 'elementMouseout', 'elementClick', 'elementDblclick', 'elementMouseDown', 'elementMouseUp')
         ,   showGuideLine = true
         ,   svgContainer = null // Must pass the chart's svg, we'll use its mousemove event.
@@ -113,6 +114,7 @@ nv.interactiveGuideline = function() {
 
                 var scaleIsOrdinal = typeof xScale.rangeBands === 'function';
                 var pointXValue = undefined;
+                var xDomain = xScale.domain();
 
                 // Ordinal scale has no invert method
                 if (scaleIsOrdinal) {
@@ -135,10 +137,42 @@ nv.interactiveGuideline = function() {
                     pointXValue = xScale.invert(mouseX);
                 }
 
+                var pointYValue = undefined;
+                var yDomain = undefined;
+
+                if (yScale) {
+                    yDomain = yScale.domain();
+                    var scaleIsOrdinal = typeof yScale.rangeBands === 'function';
+
+                    // Ordinal scale has no invert method
+                    if (scaleIsOrdinal) {
+                        var elementIndex = d3.bisect(yScale.range(), mouseY) - 1;
+                        // Check if mouseY is in the range band
+                        if (yScale.range()[elementIndex] + yScale.rangeBand() >= mouseY) {
+                            pointYValue = yScale.domain()[d3.bisect(yScale.range(), mouseY) - 1];
+                        }
+                        else {
+                            dispatch.elementMouseout({
+                                mouseX: mouseX,
+                                mouseY: mouseY
+                            });
+                            layer.renderGuideLine(null); //hide the guideline
+                            tooltip.hidden(true);
+                            return;
+                        }
+                    }
+                    else {
+                        pointYValue = yScale.invert(mouseY);
+                    }
+                }
+
                 dispatch.elementMousemove({
                     mouseX: mouseX,
                     mouseY: mouseY,
-                    pointXValue: pointXValue
+                    pointXValue: pointXValue,
+                    pointYValue: pointYValue,
+                    xDomain: xDomain,
+                    yDomain: yDomain
                 });
 
                 //If user double clicks the layer, fire a elementDblclick
@@ -146,7 +180,10 @@ nv.interactiveGuideline = function() {
                     dispatch.elementDblclick({
                         mouseX: mouseX,
                         mouseY: mouseY,
-                        pointXValue: pointXValue
+                        pointXValue: pointXValue,
+                        pointYValue: pointYValue,
+                        xDomain: xDomain,
+                        yDomain: yDomain
                     });
                 }
 
@@ -155,7 +192,10 @@ nv.interactiveGuideline = function() {
                     dispatch.elementClick({
                         mouseX: mouseX,
                         mouseY: mouseY,
-                        pointXValue: pointXValue
+                        pointXValue: pointXValue,
+                        pointYValue: pointYValue,
+                        xDomain: xDomain,
+                        yDomain: yDomain
                     });
                 }
 
@@ -164,7 +204,10 @@ nv.interactiveGuideline = function() {
                 	dispatch.elementMouseDown({
                 		mouseX: mouseX,
                 		mouseY: mouseY,
-                		pointXValue: pointXValue
+                		pointXValue: pointXValue,
+                        pointYValue: pointYValue,
+                        xDomain: xDomain,
+                        yDomain: yDomain
                 	});
                 }
 
@@ -173,7 +216,10 @@ nv.interactiveGuideline = function() {
                 	dispatch.elementMouseUp({
                 		mouseX: mouseX,
                 		mouseY: mouseY,
-                		pointXValue: pointXValue
+                		pointXValue: pointXValue,
+                        pointYValue: pointYValue,
+                        xDomain: xDomain,
+                        yDomain: yDomain
                 	});
                 }
             }
@@ -235,6 +281,12 @@ nv.interactiveGuideline = function() {
     layer.xScale = function(_) {
         if (!arguments.length) return xScale;
         xScale = _;
+        return layer;
+    };
+
+    layer.yScale = function(_) {
+        if (!arguments.length) return yScale;
+        yScale = _;
         return layer;
     };
 
