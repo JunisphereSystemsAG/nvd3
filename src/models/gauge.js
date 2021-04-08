@@ -81,12 +81,19 @@ nv.models.gauge = function() {
             var wrap = container.selectAll('.nv-wrap.nv-gauge').data(data);
             var wrapEnter = wrap.enter().append('g').attr('class','nvd3 nv-wrap nv-gauge nv-chart-' + id);
             var gEnter = wrapEnter.append('g');
-            var g_bands = gEnter.append('g').attr('class', 'nv-gaugeBands');
-            var g_title = gEnter.append('g').attr('class', 'nv-gaugeTitle');
-            var g_needle = gEnter.append('g').attr('class', 'nv-gaugeNeedle');
-            var g_label = gEnter.append('g').attr('class', 'nv-gaugeLabel');
-            var g_minLabel = gEnter.append('g').attr('class', 'nv-gaugeMinLabel');
-            var g_maxLabel = gEnter.append('g').attr('class', 'nv-gaugeMaxLabel');
+            gEnter.append('g').attr('class', 'nv-gaugeBands');
+            gEnter.append('g').attr('class', 'nv-gaugeTitle');
+            gEnter.append('g').attr('class', 'nv-gaugeNeedle');
+            gEnter.append('g').attr('class', 'nv-gaugeLabel');
+            gEnter.append('g').attr('class', 'nv-gaugeMinLabel');
+            gEnter.append('g').attr('class', 'nv-gaugeMaxLabel');
+
+            var g_title = wrap.select('g.nv-gaugeTitle');
+            var g_bands = wrap.select('g.nv-gaugeBands');
+            var g_needle = wrap.select('g.nv-gaugeNeedle');
+            var g_label = wrap.select('g.nv-gaugeLabel');
+            var g_minLabel = wrap.select('g.nv-gaugeMinLabel');
+            var g_maxLabel = wrap.select('g.nv-gaugeMaxLabel');
 
             wrap.attr('transform', 'translate(' + margin.left + ',' + margin.top + ')');
 
@@ -107,14 +114,23 @@ nv.models.gauge = function() {
                 .innerRadius(function(d){return 0.65 * radius})
                 .outerRadius(function(d){return 0.85 * radius});
 
-            g_bands.selectAll(".nv-gaugeBands path").data(gaugeBandData, function(d){return d.id}).enter().append("path")
+            var gBands = g_bands.selectAll("path.band").data(gaugeBandData, function(d){return d.id});
+
+            gBands.enter().append("path")
                     .style("fill", function(d){return d.color;})
                     .attr("class", "band")
                     .attr("d", gaugeArc);
 
-            wrap.selectAll(".nv-gaugeBands path").data(gaugeBandData, function(d){return d.id}).transition().duration(duration)
+            gBands.transition().duration(duration)
                     .style("fill", function(d){return d.color;})
-                    .attr("d", gaugeArc);
+                    // use custom tween function because d3 can't properly tween those arcs
+                    // TODO: This is a tween that doesn't animate, write a proper implementation later
+                    .attrTween("d", function(d){
+                        return function(t){
+                            return gaugeArc(d);}
+                        });
+
+            gBands.exit().remove();
 
             // draw needle
 
@@ -124,8 +140,9 @@ nv.models.gauge = function() {
                 .x(function(d) { return d.x; })
                 .y(function(d) { return d.y; })
 
-            g_needle.selectAll(".nv-gaugeNeedle path").data(needleData).enter().append("path")
-                .data(needleData)
+            var gNeedle = g_needle.selectAll("path.needle").data(needleData);
+
+            gNeedle.enter().append("path")
                 .attr("class", "needle")
                 .attr("d", needleLine)
                 .attr("stroke", "#262a2f")
@@ -142,7 +159,7 @@ nv.models.gauge = function() {
                     return "rotate(" + valueToDegrees(dv, normalizedMin, normalizedMax) + ")"
                 });
 
-            wrap.selectAll(".nv-gaugeNeedle path").data(needleData).transition().duration(duration)
+            gNeedle.transition().duration(duration)
                 .attr("d", needleLine)
                 .attr("stroke-width", function(d){return radius * 0.04})
                 .attr("transform", function(d){
@@ -157,16 +174,21 @@ nv.models.gauge = function() {
                     return "rotate(" + valueToDegrees(dv, normalizedMin, normalizedMax) + ")"
                 });
 
+            gNeedle.exit().remove();
 
-            g_needle.selectAll(".nv-gaugeNeedle circle").data(needleData).enter().append('circle')
+            var gNeedleCircle = g_needle.selectAll("circle.needle").data(needleData)
+
+            gNeedleCircle.enter().append('circle')
                 .attr("class", "needle")
                 .attr("fill", "#262a2f")
                 .attr('cx', 0)
                 .attr('cy', 0)
                 .attr('r', function(d){return 0.1 * radius});
 
-            wrap.selectAll(".nv-gaugeNeedle circle").data(needleData).transition().duration(duration)
+            gNeedleCircle.transition().duration(duration)
                 .attr('r', function(d){return 0.1 * radius});
+
+            gNeedleCircle.exit().remove();
 
             wrap.selectAll('.nv-gaugeBands path')
                 .attr("transform", function () { return "translate(" + cx + ", " + (cy - 0.08 * radius) + ") rotate(270)" });
@@ -200,40 +222,58 @@ nv.models.gauge = function() {
             var labelData = [data[0].value];
 
             // draw value
-            g_label.selectAll(".nv-gaugeLabel text").data(labelData).enter().append("text")
+            var gLabel = g_label.selectAll("text").data(labelData)
+
+            gLabel.enter().append("text")
                 .attr("dy", function(){return fontSize / 2})
                 .attr("text-anchor", "middle")
                 .text(valueFormat)
                 .style("font-size", function(d){return ((Math.min(availableHeight, availableWidth)) * 0.7 / (Math.max(valueFormat(d).length, 3) + 2)) + "px"; });
 
-            wrap.selectAll(".nv-gaugeLabel text").data(labelData).transition().duration(duration)
+            gLabel.transition().duration(duration)
                 .attr("dy", function(){return fontSize / 2})
                 .text(valueFormat)
                 .style("font-size", function(d){return ((Math.min(availableHeight, availableWidth)) * 0.7 / (Math.max(valueFormat(d).length, 3) + 2)) + "px"; });
 
+            gLabel.exit().remove();
+
+            var minData = [];
+            var maxData = [];
+
             if (showMinMaxLabels && rangeValid) {
-                g_minLabel.selectAll(".nv-gaugeMinLabel text").data([normalizedMin]).enter().append("text")
-                    .attr("dy", fontSize / 2)
-                    .attr("text-anchor", "middle")
-                    .text(minMaxFormat(normalizedMin))
-                    .style("font-size", fontSize*0.7 + "px");
-
-                wrap.select('.nv-gaugeMinLabel text').data([normalizedMin]).transition().duration(duration)
-                    .attr("dy", fontSize / 2)
-                    .text(minMaxFormat(normalizedMin))
-                    .style("font-size", fontSize*0.7 + "px");
-
-                g_maxLabel.selectAll(".nv-gaugeMaxLabel text").data([normalizedMax]).enter().append("text")
-                    .attr("dy", fontSize / 2)
-                    .attr("text-anchor", "middle")
-                    .text(minMaxFormat(max))
-                    .style("font-size", fontSize*0.7 + "px");
-
-                wrap.select('.nv-gaugeMaxLabel text').data([normalizedMax]).transition().duration(duration)
-                    .attr("dy", fontSize / 2)
-                    .text(minMaxFormat(normalizedMax))
-                    .style("font-size", fontSize*0.7 + "px");
+              minData.push(normalizedMin);
+              maxData.push(normalizedMax);
             }
+
+            var gMinLabel = g_minLabel.selectAll("text").data(minData)
+
+            gMinLabel.enter().append("text")
+                .attr("dy", fontSize / 2)
+                .attr("text-anchor", "middle")
+                .text(minMaxFormat(normalizedMin))
+                .style("font-size", fontSize*0.7 + "px");
+
+            gMinLabel.transition().duration(duration)
+                .attr("dy", fontSize / 2)
+                .text(minMaxFormat(normalizedMin))
+                .style("font-size", fontSize*0.7 + "px");
+
+            gMinLabel.exit().remove();
+
+            var gMaxLabel = g_maxLabel.selectAll("text").data(maxData)
+
+            gMaxLabel.enter().append("text")
+                .attr("dy", fontSize / 2)
+                .attr("text-anchor", "middle")
+                .text(minMaxFormat(max))
+                .style("font-size", fontSize*0.7 + "px");
+
+            gMaxLabel.transition().duration(duration)
+                .attr("dy", fontSize / 2)
+                .text(minMaxFormat(normalizedMax))
+                .style("font-size", fontSize*0.7 + "px");
+
+            gMaxLabel.exit().remove();
 
             container.on('click', function(d,i) {
                 dispatch.chartClick({
